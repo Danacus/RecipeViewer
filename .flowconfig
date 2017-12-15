@@ -1,0 +1,13 @@
+[ignore]
+
+[include]
+
+[libs]
+
+[lints]
+
+[options]
+unsafe.enable_getters_and_setters=true
+esproposal.decorators=ignore
+
+[strict]
