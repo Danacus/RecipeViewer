@@ -4,19 +4,8 @@
     "stage-0",
     "react"
   ],
-  "env": {
-    "production": {
-      "plugins": [
-        "transform-decorators-legacy",
-        ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": "css" }] 
-      ]
-    },
-    "development": {
-      "plugins": [
-        "transform-decorators-legacy",
-        "react-hot-loader/babel",
-        ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": "css" }] 
-      ]
-    }
-  }
+  "plugins": [
+    "transform-decorators-legacy",
+    ["import", { "libraryName": "antd", "libraryDirectory": "es", "style": "css" }]
+  ]
 }

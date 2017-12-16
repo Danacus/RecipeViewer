@@ -14,6 +14,7 @@ export default class Networks {
 
   @action addNetwork(network: Network) {
     this.networks.push(network);
+    return network;
   }
 }
 
