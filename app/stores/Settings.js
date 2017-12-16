@@ -20,10 +20,7 @@ export default class Settings {
     return new Promise((resolve, reject) => {
       let file = app.getPath('userData') + "/settings.json";
       if (jetpack.exists(file) !== "file") {
-        electron.remote.dialog.showOpenDialog({title: "Select minecraft instance folder", properties: ['openDirectory']}, filePaths => {
-          jetpack.file(file, {content: {path: filePaths[0]}})
-          this.readFile(file).then(settings => resolve(settings));
-        })
+        resolve(null);
       } else {
         this.readFile(file).then(settings => resolve(settings));
       }
@@ -33,10 +30,29 @@ export default class Settings {
   readFile(path: string): Promise<any> {
     return new Promise((resolve, reject) => {
       jetpack.readAsync(path, 'json').then(settings => {
-        this.settings = settings;
-        resolve(settings);
+        if (settings.path) {
+          jetpack.existsAsync(settings.path + '/config/jeiexporter/exports').then(result => {
+            if (result == 'dir') {
+              this.settings = settings;
+              resolve(settings);
+            } else {
+              resolve(null);
+            }
+          });
+        } else {
+          resolve(null);
+        }   
       })
     })
+  }
+
+  setSettings(settings: SettingsType) {
+    this.settings = settings;
+  }
+
+  saveSettings() {
+    let file = app.getPath('userData') + "/settings.json";
+    jetpack.writeAsync(file, this.settings);
   }
 
   @computed get list(): SettingsType {

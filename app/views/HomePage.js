@@ -103,7 +103,12 @@ class HomePage extends Component<Props, State> {
         onEdit={this.onEdit}
       >
         {this.props.networks.list.map((network, index) => 
-          <TabPane tab={network.getTarget} key={network.id}><NetworkView network={network} updateParent={() => this.update()} /></TabPane>
+          <TabPane 
+            tab={stores.nameMaps.list[network.getTarget] ? stores.nameMaps.list[network.getTarget] : network.getTarget} 
+            key={network.id}
+          >
+            <NetworkView network={network} updateParent={() => this.update()} />
+          </TabPane>
         )}
       </Tabs>
     );

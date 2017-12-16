@@ -1,0 +1,24 @@
+.steps-content {
+  margin-top: 16px;
+  background-color: #ffffff;
+  min-height: 200px;
+  text-align: center;
+  padding-top: 80px;
+}
+
+.steps-action {
+  margin-top: 24px;
+  background-color: #ffffff;
+}
+
+.flpLayout {
+  width: 70%;
+  height: 60vh;
+  margin: auto;
+  margin-top: 20vh;
+  background-color: #ffffff;
+}
+
+body, html {
+  overflow: hidden !important; /*I have to do this for some reason*/
+}
