@@ -1,17 +1,21 @@
 // @flow
 
 import React, {Component} from 'react';
-import {Layout, Menu, List, Collapse, Input, Button, Row, Col, Icon, Select, Card} from 'antd';
+import {Layout, Menu, List, Collapse, Input, Button, Row, Col, Icon, Select, Card, Avatar, Form} from 'antd';
 import Network from '../classes/Network';
 import { observer } from 'mobx-react';
 import Node from '../classes/Node';
 import Stack from '../classes/Stack';
 import { stores } from '../App';
+import Recipe from '../classes/Recipe';
 const SubMenu = Menu.SubMenu;
 const { Header, Content, Footer, Sider } = Layout;
 const Option = Select.Option;
+const InputGroup = Input.Group;
+const FormItem = Form.Item;
 const { Meta } = Card;
 
+import style from './style/NetworkView.css';
 
 type Props = {
   network: Network,
@@ -23,8 +27,21 @@ type State = {
   whitelistAdd: string, 
   blacklistAdd: string,
   target: string,
-  selectedNode: Node
+  selectedNode: Node,
+  selectedRecipe: any,
+  limit: number,
+  depth: number,
+  targetAmount: number
 }
+
+const formItemLayout = {
+  labelCol: {
+    sm: { span: 6 },
+  },
+  wrapperCol: {
+    sm: { span: 18 },
+  },
+};
 
 @observer
 export default class NetworkView extends Component<Props, State> {
@@ -37,7 +54,11 @@ export default class NetworkView extends Component<Props, State> {
       whitelistAdd: '',
       blacklistAdd: '',
       target: '',
-      selectedNode: new Node(new Stack(['']), -1)
+      limit: this.props.network.limit,
+      depth: this.props.network.depth,
+      targetAmount: this.props.network.target.amount,
+      selectedNode: new Node(new Stack(['']), -1),
+      selectedRecipe: null
     }
   }
   onCollapse = (collapsed: boolean) => {
@@ -77,6 +98,21 @@ export default class NetworkView extends Component<Props, State> {
     this.setState({target});
   }
 
+  setLimit(limit: number) {
+    this.props.network.setLimit(limit);
+    this.setState({limit});
+  }
+
+  setDepth(depth: number) {
+    this.props.network.setDepth(depth);
+    this.setState({depth});
+  }
+
+  setTargetAmount(targetAmount: number) {
+    this.props.network.setTargetAmount(targetAmount);
+    this.setState({targetAmount});
+  }
+
   setAlgorithm(index: number) {
     this.props.network.setAlgorithm(index);
     this.regenerate();
@@ -86,10 +122,19 @@ export default class NetworkView extends Component<Props, State> {
     this.props.network.generate();
     this.props.network.visReload();
     
-    this.props.network.setOnclickCallback(node => node ? 
-      this.setState({selectedNode: node}) : 
-      this.setState({selectedNode: new Node(new Stack(['']), -1)})
-    );
+    this.props.network.setOnclickCallback((node, edge) =>  {
+      if (node) {
+        this.setState({selectedNode: node})
+      } else {
+        this.setState({selectedNode: new Node(new Stack(['']), -1)})
+      }
+      
+      if (edge) {
+        this.setState({selectedRecipe: edge.recipe})
+      } else {
+        this.setState({selectedRecipe: null});
+      }
+     });
 
     this.props.network.setOnDoubleclickCallback(node => {
       if (node) {
@@ -117,22 +162,53 @@ export default class NetworkView extends Component<Props, State> {
           style={{ background: '#fff', overflow: "auto", position: "fixed", right: "0" }}
         >
           <Collapse onChange={() => {}} style={{overflow: "auto", maxHeight: '93vh'}}>
-            <Collapse.Panel header="Target">
-              <Input onChange={e => this.setTarget(e.target.value)} value={this.state.target} onPressEnter={() => this.regenerate()}></Input>
+            {/* 
+              ***
+              Target
+              ***
+            */}
+            <Collapse.Panel header="Target">    
+              <Form>
+                <FormItem {...formItemLayout} label="Target">
+                  <Input onChange={e => this.setTarget(e.target.value)} value={this.state.target} onPressEnter={() => this.regenerate()}></Input>
+                </FormItem>
+                <FormItem {...formItemLayout} label="Amount">
+                  <Input type="number" onChange={e => this.setTargetAmount(e.target.value)} value={this.state.targetAmount} onPressEnter={() => this.regenerate()}></Input>
+                </FormItem>
+              </Form>
             </Collapse.Panel>
 
+            {/* 
+              ***
+              Algorithm
+              ***
+            */}
             <Collapse.Panel header="Algorithm">
-              <Select
-                placeholder="Select an algorithm"
-                style={{width: "300px"}}
-                onSelect={key => this.setAlgorithm(key)}
-              >
-                {this.props.network.listAllAlgortihms.map((alg, index) => 
-                  <Option key={index}>{alg}</Option>
-                )}
-              </Select>
+              <Form>
+                <FormItem {...formItemLayout} label="Algorithm">
+                  <Select
+                    placeholder="Select an algorithm"
+                    onSelect={key => this.setAlgorithm(key)}
+                  >
+                    {this.props.network.listAllAlgortihms.map((alg, index) => 
+                      <Option key={index}>{alg}</Option>
+                    )}
+                  </Select>
+                </FormItem>
+                <FormItem {...formItemLayout} label="Limit">
+                  <Input type="number" onChange={e => this.setLimit(e.target.value)} value={this.state.limit} onPressEnter={() => this.regenerate()} />
+                </FormItem>
+                <FormItem {...formItemLayout} label="Depth">
+                  <Input type="number" onChange={e => this.setDepth(e.target.value)} value={this.state.depth} onPressEnter={() => this.regenerate()}></Input>
+                </FormItem>
+              </Form>
             </Collapse.Panel>
 
+            {/* 
+              ***
+              Blacklist
+              ***
+            */}
             <Collapse.Panel header="Blacklist">
               <List
                 size="small"
@@ -162,6 +238,11 @@ export default class NetworkView extends Component<Props, State> {
               />
             </Collapse.Panel>
             
+            {/* 
+              ***
+              Whitelist
+              ***
+            */}
             <Collapse.Panel header="Whitelist">
               <List
                 size="small"
@@ -191,21 +272,97 @@ export default class NetworkView extends Component<Props, State> {
               />
             </Collapse.Panel>    
 
+            {/* 
+              ***
+              Actions
+              ***
+            */}
             <Collapse.Panel header="Actions">
               <Button onClick={() => this.regenerate()}>Reload Network</Button>
             </Collapse.Panel>
 
-            {this.state.selectedNode.id !== -1 ? 
+            {/* 
+              ***
+              Selected Node
+              ***
+            */}
+            {this.state.selectedNode.stack && this.state.selectedNode.id !== -1 ? 
               <Collapse.Panel header="Selected Node">
-                <Card
-                  style={{ width: 200, height: 245 }}
-                  cover={<img src={this.state.selectedNode.image} style={{height: "140px", width: "140px", margin: "auto", marginTop: "5px"}} />}
-                >
-                  <Meta
-                    title={stores.nameMaps.list[this.state.selectedNode.stack.names[0]]}
-                    description={this.state.selectedNode.stack.names[0]}
-                  />
-                </Card>
+                <List
+                  itemLayout="horizontal"
+                  dataSource={[this.state.selectedNode]}
+                  renderItem={item => (
+                    <List.Item>
+                      <List.Item.Meta
+                        avatar={<Avatar src={item.image} />}
+                        title={stores.nameMaps.list[item.stack.names[0]]}
+                        description={item.stack.names[0]}
+                      />
+                    </List.Item>
+                  )}
+                />
+              </Collapse.Panel> : ''
+            }
+
+            {/* 
+              ***
+              Selected Recipe
+              ***
+            */}
+            {this.state.selectedRecipe ? 
+              <Collapse.Panel header="Selected Recipe">
+                <h3>Catalysts</h3>
+                <List
+                  itemLayout="horizontal"
+                  dataSource={this.state.selectedRecipe.catalysts}
+                  renderItem={item => (
+                    <List.Item>
+                      <List.Item.Meta
+                        avatar={<Avatar src={
+                          `file://${stores.settings.list.path}/config/jeiexporter/items/${item.names[0].replace(/:/g, "_")}.png`
+                        } />}
+                        title={stores.nameMaps.list[item.names[0]]}
+                        description={item.names[0]}
+                      />
+                    </List.Item>
+                  )}
+                />
+
+                <h3>Inputs</h3>
+                <List
+                  itemLayout="horizontal"
+                  dataSource={this.state.selectedRecipe.inputs.filter(item => item.names.length > 0 && item.amount > 0)}
+                  renderItem={item => (
+                    <List.Item>
+                      {console.log(item)}
+                      <List.Item.Meta
+                        avatar={<Avatar src={
+                          `file://${stores.settings.list.path}/config/jeiexporter/items/${item.names[0].replace(/:/g, "_")}.png`
+                        } />}
+                        title={item.amount + ' x ' + stores.nameMaps.list[item.names[0]]}
+                        description={item.names[0]}
+                      />
+                    </List.Item>
+                  )}
+                />
+
+                <h3>Outputs</h3>
+                <List
+                  itemLayout="horizontal"
+                  dataSource={this.state.selectedRecipe.outputs.filter(item => item.names.length > 0 && item.amount > 0)}
+                  renderItem={item => (
+                    <List.Item>
+                      {console.log(item)}
+                      <List.Item.Meta
+                        avatar={<Avatar src={
+                          `file://${stores.settings.list.path}/config/jeiexporter/items/${item.names[0].replace(/:/g, "_")}.png`
+                        } />}
+                        title={item.amount + ' x ' + stores.nameMaps.list[item.names[0]]}
+                        description={item.names[0]}
+                      />
+                    </List.Item>
+                  )}
+                />
               </Collapse.Panel> : ''
             }
             

@@ -1,6 +1,7 @@
 // @flow
 
 import Stack from "./Stack";
+import Recipe from "./Recipe";
 
 export default class Node {
   stack: Stack;
@@ -8,13 +9,17 @@ export default class Node {
   parents: Node[];
   id: number;
   image: string;
+  amount: number;
+  group: number;
 
-  constructor(stack: Stack, id: number) {
+  constructor(stack: Stack, id: number, amount: number = 0, group: number = 0) {
     this.parents = [];
     this.children = [];
     this.stack = stack;
     this.id = id;
     this.image = '';
+    this.amount = amount;
+    this.group = group;
   }
 
   getChildren(): Node[] {

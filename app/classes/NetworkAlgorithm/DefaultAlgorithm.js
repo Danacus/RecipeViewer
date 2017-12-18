@@ -3,51 +3,55 @@
 import INetworkAlgorithm from "./INetworkAlgorithm";
 import type { AlgorithmOptions } from "./INetworkAlgorithm";
 import Node from "../Node";
+import Edge from "../Edge";
 
 export default class DefaultAlgorithm extends INetworkAlgorithm {
+
+  nodes: Node[];
+  edges: Edge[];
 
   constructor(options: AlgorithmOptions) {
     super(options);
 
-    this.name = "Default Algorithm";
+    this.nodes = [];
+    this.edges = [];
   }
 
-  generateNetwork(): Node[] {
-    let nodes = [];
-    let targetNode: Node = new Node(this.options.target, 0)
+  static name(): string {
+    let name = "Default Algorithm"; 
+    return name;
+  }
+
+  generateNetwork(): any {
+    let targetNode: Node = new Node(this.options.target, 0, this.options.target.amount);
     this.counter = 0;
-    nodes = this.createNode(targetNode, nodes, 0);
-    return nodes;
+    this.createNode(targetNode, 0);
+    return {nodes: this.nodes, edges: this.edges};
   }
 
-  createNode(node: Node, nodes: Node[], depth: number): Node[] {
-    nodes.push(node);
+  createNode(node: Node, depth: number) {
+    this.nodes.push(node);
 
-    if (this.counter > this.options.limit || depth > this.options.depth)
-      return nodes;
+    if (this.counter > this.options.limit || depth > this.options.depth) {
+      return;
+    }
 
-    this.options.recipes.getRecipesWithOutput(node.stack).forEach(recipe => {
+    let parentRecipes = this.options.recipes.getRecipesWithOutput(node.stack)
+    .filter(recipe => !recipe.isBlacklisted(this.options.blacklist))
+    .filter(recipe => recipe.isWhitelisted(this.options.whitelist));
+
+    parentRecipes.forEach((recipe, i, recipes) => {
       recipe.inputs.forEach(input => {
-        if (!nodes.some(node => node.stack.matches(input)) 
-          && !input.matchesRegexList(this.options.blacklist) 
-          && (input.matchesRegexList(this.options.whitelist) || this.options.whitelist.length == 0)) {
-          this.counter++;
-          if (nodes.some(n => node.stack.matches(input))) {
-            nodes.filter(n => node.stack.matches(input)).forEach(n => {
-              n.addChild(node);
-              node.addParent(n);
-            })
-          } else {
-            let n: Node = new Node(input, nodes.length);
-            n.addChild(node);
-            node.addParent(n);
-  
-            nodes = this.createNode(new Node(input, nodes.length), nodes, depth + 1);
-          } 
+        if (input.names.length > 0) {
+          let output = recipe.outputs.find(output => output.equals(node.stack));
+          let outputAmount = output ? output.amount : 1;
+          let n: Node = new Node(input, this.nodes.length + 1, Math.ceil(node.amount * (input.amount / outputAmount)), recipe.id);
+          n.addChild(node);  
+          node.addParent(n);
+          this.edges.push(new Edge(n, node, recipe, i, this.edges.length + 1));
+          this.createNode(n, depth + 1);
         } 
-      })
-    })
-  
-    return nodes;
+      });
+    });
   }
 }

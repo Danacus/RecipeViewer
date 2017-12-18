@@ -94,6 +94,45 @@ class HomePage extends Component<Props, State> {
     this.setState({ activeKey });
   }
 
+
+  //Testing only
+  componentDidMount() {
+    setTimeout(() => {
+      let network = this.props.networks.addNetwork(new Network(new Stack([''])));
+      network.setRecipes(stores.recipes);
+      network.setAlgorithm(NetworkAlgorithms[0]);
+      network.setWhitelist([/minecraft/])
+      network.setTarget('minecraft:repeater:0');
+      network.setVisOptions({
+        nodes: {
+          shape: 'image'
+        },
+        edges: {
+          width: 7,
+          arrows: {
+            middle: {enabled: true, scaleFactor: -1}
+          },
+          color: {inherit: 'to'}
+        },
+        physics: {
+          enabled: true,
+          barnesHut: {
+            springLength: 250,
+            springConstant: 0.003,
+            damping: 0.1
+          }
+        },
+        layout: {
+          hierarchical: {
+            enabled: false,
+            nodeSpacing: 1000
+          }
+        }
+      })
+      this.setState({ activeKey: network.id });
+    }, 2000)  
+  }
+
   render() {
     return (
       <Tabs 

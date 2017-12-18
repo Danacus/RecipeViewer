@@ -17,11 +17,12 @@ export type AlgorithmOptions = {
 export default class INetworkAlgorithm {
   options: AlgorithmOptions;
   counter: number;
-  name: string;
+
   constructor(options: AlgorithmOptions) {
     this.options = options;
     this.counter = 0;
   }
 
+  static name(): string {return ""}
   generateNetwork(): Node[] {return [];}
 }
