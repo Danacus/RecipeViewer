@@ -9,6 +9,8 @@ const BrowserWindow = electron.BrowserWindow
 // Load environmental variables
 require('dotenv').load()
 
+require('electron-debug')();
+
 if (process.env.NODE_ENV === "development") {
   let hotReloadServer = require('hot-reload-server')
   let webpackConfig = require('./webpack.config.dev')

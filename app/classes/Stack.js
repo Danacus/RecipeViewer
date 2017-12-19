@@ -8,6 +8,19 @@ export default class Stack {
     this.amount = amount;
   }
 
+  serialize(): Object {
+    return {
+      names: this.names,
+      amount: this.amount
+    }
+  }
+
+  deserialize(data: Object) {
+    this.names = data.names;
+    this.amount = data.amount;
+    return this;
+  }
+
   equals(stack: Stack): boolean {
     return this.names.some(name => stack.names.includes(name)) || stack.names.some(name => this.names.includes(name))
   }

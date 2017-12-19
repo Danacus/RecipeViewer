@@ -21,7 +21,7 @@ export default class ItemList extends Component<Props> {
           <List.Item>
             <List.Item.Meta
               avatar={<Avatar src={
-                `file://${stores.settings.list.path}/config/jeiexporter/items/${item.names[0].replace(/:/g, "_")}.png`
+                `file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${item.names[0].replace(/:/g, "_")}.png`
               } />}
               title={item.amount > 0 ? item.amount + ' x ' + stores.nameMaps.list[item.names[0]] : stores.nameMaps.list[item.names[0]]}
               description={item.names[0]}

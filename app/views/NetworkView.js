@@ -321,7 +321,7 @@ export default class NetworkView extends Component<Props, State> {
                 > 
                   {this.state.selectedRecipes.map((recipe, i) =>    
                     <TabPane tab={<Avatar src={
-                      `file://${stores.settings.list.path}/config/jeiexporter/items/${recipe.outputs[0].names[0].replace(/:/g, "_")}.png`
+                      `file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${recipe.outputs[0].names[0].replace(/:/g, "_")}.png`
                     } />} key={i}>
                       <ItemList label="Catalysts" items={recipe.catalysts} />
                       <ItemList label="Inputs" items={recipe.inputs.filter(item => item.names.length > 0 && item.amount > 0)} />

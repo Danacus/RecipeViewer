@@ -34,6 +34,7 @@ export default class Recipes {
 
   loadRecipes(gamePath: string): Promise<any> {
     return new Promise((resolve, reject) => {
+      this.recipes = [];
       let recipePath = gamePath + "/config/jeiexporter/exports/recipes/";
 
       jetpack.findAsync(recipePath, {matching: "*.json"}).then(files =>

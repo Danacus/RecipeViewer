@@ -9,7 +9,7 @@ import {Provider} from 'mobx-react';
 import Networks from './stores/Networks';
 import Recipes from './stores/Recipes';
 import HomePage from './views/HomePage';
-import FirstLaunchPage from './views/FirstLaunchPage';
+import CreateProfilePage from './views/CreateProfilePage';
 import Network from './classes/Network';
 import Stack from './classes/Stack';
 import Settings from './stores/Settings';
@@ -18,11 +18,15 @@ import { withRouter } from "react-router";
 import NameMaps from "./stores/NameMaps";
 
 export const stores = {
-  networks: new Networks(),
+  //networks: new Networks(),
   recipes: new Recipes([]),
   settings: new Settings(),
   nameMaps: new NameMaps()
 }
+
+let appInstance;
+
+if (!window.location.href.match(/(index\.html)$/)) window.location.href = './index.html';
 
 //window.stores = stores;
 
@@ -40,6 +44,12 @@ export default class App extends Component<Props, State> {
   constructor() {
     super();
 
+    appInstance = this;
+
+    this.reset();
+  }
+
+  reset() {
     this.state = {
       ready: false,
       firstLaunch: false
@@ -47,8 +57,8 @@ export default class App extends Component<Props, State> {
 
     stores.settings.loadSettings().then(settings => {
       if (settings) {
-        stores.recipes.loadRecipes(settings.path).then(() => {
-          stores.nameMaps.loadTooltipMap(settings.path).then(() => {
+        stores.recipes.loadRecipes(settings.getCurrentProfile().path).then(() => {
+          stores.nameMaps.loadTooltipMap(settings.getCurrentProfile().path).then(() => {
             this.setState({ready: true});
           });
         });
@@ -58,7 +68,7 @@ export default class App extends Component<Props, State> {
       }
     });
   }
-
+  
   render() {
     return (
       <Provider {...stores}>
@@ -66,12 +76,12 @@ export default class App extends Component<Props, State> {
           <div>
             <Route exact path="/homepage"
               render={(routeProps) => (
-                <HomePage {...routeProps} networks={stores.networks} />
+                <HomePage {...routeProps} settings={stores.settings} />
               )}
             />
             <Route exact path="/firstlaunch"
               render={(routeProps) => (
-                <FirstLaunchPage settings={stores.settings} />
+                <CreateProfilePage settings={stores.settings} />
               )}
             />
             <Route exact path="/"
@@ -91,6 +101,8 @@ export default class App extends Component<Props, State> {
     )
   }
 }
+
+export { appInstance };
 
 
 

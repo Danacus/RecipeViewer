@@ -55,6 +55,34 @@ export default class Network {
     this.depth = 10;
     this.algorithm = 0;
   }
+  
+  serialize(): Object {
+    return {
+      target: this.target.serialize(),
+      visOptions: this.visOptions,
+      id: this.id,
+      whitelist: this.whitelist.map(item => item.source),
+      blacklist: this.blacklist.map(item => item.source),
+      algorithm: this.algorithm,
+      limit: this.limit,
+      depth: this.depth,
+      seed: this.seed,
+      selectedLayout: this.selectedLayout
+    }
+  }
+
+  deserialize(data: Object) {
+    this.target.deserialize(data.target);
+    this.visOptions = data.visOptions;
+    this.id = data.id;
+    this.whitelist = data.whitelist.map(item => new RegExp(item, "i"));
+    this.blacklist = data.blacklist.map(item => new RegExp(item, "i"));
+    this.limit = data.limit;
+    this.depth = data.depth;
+    this.seed = data.seed;
+    this.selectedLayout = data.selectedLayout;
+    return this;
+  }
 
   setVisOptions(visOptions: {}) {
     this.visOptions = visOptions;
@@ -72,12 +100,14 @@ export default class Network {
     let obj = this.algorithmInstance.generateNetwork(); 
     this.nodes = obj.nodes;
     this.edges = obj.edges;
+
+    stores.settings.saveSettings();
   }
 
   visReload() {
     this.nodes.forEach(node => {
       if (node.stack.names.length > 0)
-        node.setImage(`file://${stores.settings.list.path}/config/jeiexporter/items/${node.stack.names[0].replace(/:/g, "_")}.png`)
+        node.setImage(`file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${node.stack.names[0].replace(/:/g, "_")}.png`)
     });
 
     this.visOptions.layout.randomSeed = this.seed;

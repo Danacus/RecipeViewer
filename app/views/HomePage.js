@@ -2,23 +2,27 @@
 
 import React, {PropTypes, Component} from 'react';
 import { observer } from 'mobx-react';
-import {Link} from 'react-router-dom';
-import { Tabs } from 'antd';
+import { Link, Redirect } from 'react-router-dom';
+import { Tabs, Layout, Row, Col, Select } from 'antd';
 const TabPane = Tabs.TabPane;
+const Option = Select.Option;
 
 import NetworkView from './NetworkView';
 import Networks from '../stores/Networks';
 import Network from '../classes/Network';
 import Stack from '../classes/Stack';
-import { stores } from '../App';
+import { stores, appInstance } from '../App';
 import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
+import Settings from '../stores/Settings';
+import style from './style/HomePage.css';
 
 type Props = {
-  networks: Networks  
+  settings: Settings  
 }
 
 type State = {
-  activeKey: string
+  activeKey: string,
+  addProfile: boolean
 }
 
 @observer
@@ -29,8 +33,11 @@ class HomePage extends Component<Props, State> {
     super(props);
     this.newTabIndex = 0;
     this.state = {
-      activeKey: '',
+      activeKey: this.props.settings.getCurrentProfile().networks.selectedNetwork,
+      addProfile: false
     };
+
+    console.log(this.props.settings.list)
   }
 
   update() {
@@ -38,15 +45,28 @@ class HomePage extends Component<Props, State> {
   }
 
   onChange = (activeKey: string) => {
-    this.setState({ activeKey });
+    this.props.settings.getCurrentProfile().networks.selectedNetwork = activeKey;
   }
 
   onEdit = (targetKey: string, action: any) => {
     this[action](targetKey);
   }
 
+  changeProfile(profile: string) {
+    if (profile == "add") {
+      this.setState({addProfile: true});
+      //this.setState({addProfile: false});
+    } else {
+      this.props.settings.selectProfile(parseInt(profile));
+      this.setState({});
+      if (appInstance) {
+        appInstance.reset();
+      }
+    }
+  }
+
   add = () => {
-    let network = this.props.networks.addNetwork(new Network(new Stack([''])));
+    let network = this.props.settings.getCurrentProfile().networks.addNetwork(new Network(new Stack([''])));
     network.setRecipes(stores.recipes);
     //network.setAlgorithm(NetworkAlgorithms[0]);
     network.setVisOptions({
@@ -78,78 +98,45 @@ class HomePage extends Component<Props, State> {
     this.setState({ activeKey: network.id });
   }
   
-  remove = (targetKey: string) => {
-    let activeKey = this.state.activeKey;
-    let lastIndex: number = -1;
-    this.props.networks.list.forEach((network, i) => {
-      if (network.id === targetKey) {
-        lastIndex = i - 1;
-      }
-    });
-    const networks = this.props.networks.list.filter(network => network.id !== targetKey);
-    if (lastIndex >= 0 && activeKey === targetKey) {
-      activeKey = networks[lastIndex].id;
-    }
-    this.props.networks.networks = this.props.networks.list.filter(network => network.id !== targetKey);
-    this.setState({ activeKey });
-  }
-
-
-  //Testing only
-  componentDidMount() {
-    setTimeout(() => {
-      let network = this.props.networks.addNetwork(new Network(new Stack([''])));
-      network.setRecipes(stores.recipes);
-      network.setAlgorithm(NetworkAlgorithms[0]);
-      network.setWhitelist([/minecraft/])
-      network.setTarget('minecraft:repeater:0');
-      network.setVisOptions({
-        nodes: {
-          shape: 'image'
-        },
-        edges: {
-          width: 7,
-          arrows: {
-            middle: {enabled: true, scaleFactor: -1}
-          },
-          color: {inherit: 'to'}
-        },
-        physics: {
-          enabled: true,
-          barnesHut: {
-            springLength: 250,
-            springConstant: 0.003,
-            damping: 0.1
-          }
-        },
-        layout: {
-          hierarchical: {
-            enabled: true,
-            sortMethod: 'directed'
-          }
-        }
-      })
-      this.setState({ activeKey: network.id });
-    }, 2000)  
+  remove = (targetKey: number) => {
+    this.props.settings.getCurrentProfile().networks.selectedNetwork = this.props.settings.getCurrentProfile().networks.list[0].id;
+    this.props.settings.getCurrentProfile().networks.networks = this.props.settings.getCurrentProfile().networks.list.filter(network => network.id !== targetKey);
+    this.setState({});
   }
 
   render() {
     return (
-      <Tabs 
-        type="editable-card"
-        onChange={this.onChange}
-        activeKey={this.state.activeKey}
-        onEdit={this.onEdit}
-      >
-        {this.props.networks.list.map((network, index) => 
-          <TabPane 
-            tab={stores.nameMaps.list[network.getTarget] ? stores.nameMaps.list[network.getTarget] : network.getTarget} 
-            key={network.id}
-          >
-            <NetworkView network={network} updateParent={() => this.update()} />
-          </TabPane>
-        )}
-      </Tabs>
+      this.state.addProfile ? <Redirect to="/firstlaunch" push={true} /> :
+      <div>
+        <Row>
+          <Col span={21}>
+            <Tabs 
+              type="editable-card"
+              onChange={this.onChange}
+              activeKey={this.props.settings.getCurrentProfile().networks.selectedNetwork}
+              onEdit={this.onEdit}
+              className='tabs'
+            >
+              {this.props.settings.getCurrentProfile().networks.list.map((network, index) => 
+                <TabPane 
+                  tab={stores.nameMaps.list[network.getTarget] ? stores.nameMaps.list[network.getTarget] : network.getTarget} 
+                  key={network.id}
+                >
+                  <NetworkView network={network} updateParent={() => this.update()} />
+                </TabPane>
+              )}
+            </Tabs>
+          </Col>
+          <Col span={3} className="header-row">
+            <Select className='select-profile' value={this.props.settings.getCurrentProfile().name} onChange={value => this.changeProfile(value)}>
+              {this.props.settings.list.profiles.map((profile, i) => 
+                <Option key={i} value={i}>{profile.name}</Option>
+              )}
+              <Option key='add' value='add'>New profile ...</Option>
+            </Select>
+          </Col>
+        </Row>     
+      </div>
     );
   }
 }
