@@ -124,8 +124,8 @@ class HomePage extends Component<Props, State> {
         },
         layout: {
           hierarchical: {
-            enabled: false,
-            nodeSpacing: 1000
+            enabled: true,
+            sortMethod: 'directed'
           }
         }
       })

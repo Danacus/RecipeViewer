@@ -1,29 +1,32 @@
 // @flow
 
-import INetworkAlgorithm from "./INetworkAlgorithm";
-import type { AlgorithmOptions } from "./INetworkAlgorithm";
+import { INetworkAlgorithm } from "./INetworkAlgorithm";
 import Node from "../Node";
 import Edge from "../Edge";
+import Stack from '../Stack';
+import Recipes from '../../stores/Recipes';
 
-export default class DefaultAlgorithm extends INetworkAlgorithm {
-
+export default class DefaultAlgorithm implements INetworkAlgorithm {
+  target: Stack;
+  recipes: Recipes;
+  limit: number;
+  depth: number;
+  blacklist: RegExp[];
+  whitelist: RegExp[];
+  counter: number;
   nodes: Node[];
   edges: Edge[];
+  name: string;
 
-  constructor(options: AlgorithmOptions) {
-    super(options);
-
+  constructor() {
+    this.counter = 0;
     this.nodes = [];
     this.edges = [];
-  }
-
-  static name(): string {
-    let name = "Default Algorithm"; 
-    return name;
+    this.name = "Default Algorithm"
   }
 
   generateNetwork(): any {
-    let targetNode: Node = new Node(this.options.target, 0, this.options.target.amount);
+    let targetNode: Node = new Node(this.target, 0, this.target.amount);
     this.counter = 0;
     this.createNode(targetNode, 0);
     return {nodes: this.nodes, edges: this.edges};
@@ -31,14 +34,15 @@ export default class DefaultAlgorithm extends INetworkAlgorithm {
 
   createNode(node: Node, depth: number) {
     this.nodes.push(node);
+    this.counter++;
 
-    if (this.counter > this.options.limit || depth > this.options.depth) {
+    if (this.counter > this.limit || depth > this.depth) {
       return;
     }
 
-    let parentRecipes = this.options.recipes.getRecipesWithOutput(node.stack)
-    .filter(recipe => !recipe.isBlacklisted(this.options.blacklist))
-    .filter(recipe => recipe.isWhitelisted(this.options.whitelist));
+    let parentRecipes = this.recipes.getRecipesWithOutput(node.stack)
+    .filter(recipe => !recipe.isBlacklisted(this.blacklist))
+    .filter(recipe => recipe.isWhitelisted(this.whitelist));
 
     parentRecipes.forEach((recipe, i, recipes) => {
       recipe.inputs.forEach(input => {
