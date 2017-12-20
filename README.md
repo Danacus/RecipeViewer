@@ -17,3 +17,6 @@ You also have to install [JEIExporter](https://github.com/Danacus/JEIExporter)!
 ## Building from source
 Clone the repository and run `yarn install` (or `npm install` if you prefer for some reason).  
 Then you can use [electron-builder](https://github.com/electron-userland/electron-builder) to build binaries. electron-builder is already included and configured.  
+
+## Help me find a cool name for this
+Send your ideas!
