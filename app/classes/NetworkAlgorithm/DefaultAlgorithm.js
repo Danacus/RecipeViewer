@@ -49,7 +49,7 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
         if (input.names.length > 0) {
           let output = recipe.outputs.find(output => output.equals(node.stack));
           let outputAmount = output ? output.amount : 1;
-          let n: Node = new Node(input, this.nodes.length + 1, Math.ceil(node.amount * (input.amount / outputAmount)), recipe.id);
+          let n: Node = new Node(input, this.nodes.length + 1, Math.round(100 * node.amount * (input.amount / outputAmount)) / 100, recipe.id);
           n.addChild(node);  
           node.addParent(n);
           this.edges.push(new Edge(n, node, recipe, i, this.edges.length + 1));

@@ -16,6 +16,8 @@ export const NetworkLayouts = [
     name: 'Normal',
     apply(options: Object) { 
       options.layout.hierarchical.enabled = false;
+      options.physics.solver = 'barnesHut';
+      options.edges.smooth = {};
     }
   },
   {
@@ -23,13 +25,16 @@ export const NetworkLayouts = [
     apply(options: Object) {
       options.layout.hierarchical.enabled = true;
       options.layout.hierarchical.direction = 'DU';
+      options.layout.hierarchical.sortMethod = 'directed';
+      options.physics.solver = 'hierarchicalRepulsion';
+      options.edges.smooth.enabled = false;
     }
   }
 ]
 
 export default class Network {
   @observable target: Stack;
-  id: string;
+  @observable id: string;
   nodes: Node[];
   edges: Edge[];
   visNodes: vis.DataSet;
@@ -45,6 +50,7 @@ export default class Network {
   @observable depth: number;
   @observable seed: ?number;
   @observable selectedLayout: number;
+  @observable collapsed: boolean;
 
   constructor(target: Stack) {
     this.target = target;
@@ -52,7 +58,7 @@ export default class Network {
     this.whitelist = [];
     this.blacklist = [];
     this.limit = 100;
-    this.depth = 10;
+    this.depth = 3;
     this.algorithm = 0;
   }
   
@@ -112,7 +118,7 @@ export default class Network {
 
     this.visOptions.layout.randomSeed = this.seed;
 
-    let visNodes = this.nodes.map(node => ({id: node.id, group: node.group, image: node.image, label: node.amount.toString()}));
+    let visNodes = this.nodes.map(node => ({id: node.id, group: node.group, image: node.image, label: node.amount > 0 ? node.amount.toString() : undefined}));
     let visEdges = this.edges.map(edge => ({id: edge.id, from: edge.child.id, to: edge.parent.id}));
 
     this.visNodes = new vis.DataSet(visNodes);
@@ -126,6 +132,10 @@ export default class Network {
 
   @action newSeed() {
     this.seed = undefined;
+  }
+
+  @action newId() {
+    this.id = uuidv4();
   }
 
   setRecipes(recipes: Recipes) {

@@ -7,7 +7,8 @@ import { stores } from '../../App';
 
 type Props = {
   items: Array<Stack>,
-  label: string
+  label: string,
+  onClick: Function
 }
 
 export default class ItemList extends Component<Props> {
@@ -18,7 +19,7 @@ export default class ItemList extends Component<Props> {
           itemLayout="horizontal"
           dataSource={this.props.items}
           renderItem={item => (
-          <List.Item>
+          <List.Item onClick={() => this.props.onClick(item)}>
             <List.Item.Meta
               avatar={<Avatar src={
                 `file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${item.names[0].replace(/:/g, "_")}.png`

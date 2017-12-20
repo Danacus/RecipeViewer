@@ -1,3 +1,20 @@
 .ant-card-body {
   padding: 5px;
 }
+
+.ant-collapse-item, .ant-layout-sider, .ant-layout-sider-children {
+  background: rgba(255, 255, 255, 0.5) !important;
+}
+
+.ant-layout-sider-trigger {
+  background: rgba(0, 0, 0, 0);
+  color: black;
+}
+
+.ant-form-item {
+  margin-bottom: 10px !important;
+}
+
+.actions button {
+  margin-bottom: 10px;
+}

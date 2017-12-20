@@ -10,6 +10,7 @@ import Networks from './stores/Networks';
 import Recipes from './stores/Recipes';
 import HomePage from './views/HomePage';
 import CreateProfilePage from './views/CreateProfilePage';
+import SettingsPage from './views/SettingsPage';
 import Network from './classes/Network';
 import Stack from './classes/Stack';
 import Settings from './stores/Settings';
@@ -82,6 +83,11 @@ export default class App extends Component<Props, State> {
             <Route exact path="/firstlaunch"
               render={(routeProps) => (
                 <CreateProfilePage settings={stores.settings} />
+              )}
+            />
+            <Route exact path="/settings"
+              render={(routeProps) => (
+                <SettingsPage settings={stores.settings} />
               )}
             />
             <Route exact path="/"

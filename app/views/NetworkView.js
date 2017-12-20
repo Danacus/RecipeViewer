@@ -24,7 +24,8 @@ import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms
 
 type Props = {
   network: Network,
-  updateParent: any
+  updateParent: any,
+  addNetwork: Function
 }
 
 type State = {
@@ -62,14 +63,21 @@ export default class NetworkView extends Component<Props, State> {
       selectedRecipes: [],
       blacklistInput: null,
       whitelistInput: null,
-      selectedAlgorithm: 0,
-      selectedLayout: 0,
-      physicsEnabled: true
+      selectedAlgorithm: this.props.network.algorithm,
+      selectedLayout: this.props.network.selectedLayout,
+      physicsEnabled: this.props.network.visOptions.physics.enabled
     }
-  }
-  onCollapse = (collapsed: boolean) => {
-    console.log(collapsed);
-    this.setState({ collapsed });
+
+
+    //More hacks! Working better than expected
+    window.onresize = () => {
+      if (this.props.network.collapsed) {
+        return;
+      }
+
+      this.props.network.collapsed = true;
+      this.props.network.collapsed = false;
+    }
   }
 
   addWhitelistItem() {
@@ -143,6 +151,10 @@ export default class NetworkView extends Component<Props, State> {
   }
 
   regenerate() {
+    if (this.props.network.target.names[0] == '') {
+      return;
+    }
+
     this.props.network.generate();
     this.props.network.visReload();
     
@@ -165,11 +177,12 @@ export default class NetworkView extends Component<Props, State> {
       }    
      });
 
-    this.props.network.setOnDoubleclickCallback(node => {
+    this.props.network.setOnDoubleclickCallback((node, edges) => {
       if (node) {
-        node.stack.names.forEach(name => {
+        /*node.stack.names.forEach(name => {
           this.props.network.addBlacklistItem(new RegExp(name, "i"));
-        })
+        })*/
+        this.props.addNetwork(node.stack, this.props.network.serialize());
         this.regenerate();
       }
     });
@@ -192,10 +205,14 @@ export default class NetworkView extends Component<Props, State> {
 
         </Content>
         <Sider
-          width={400}
+          collapsible
+          trigger={null}
+          collapsedWidth={0}
+          collapsed={this.props.network.collapsed}
+          width={window.innerWidth / 4}
           style={{background: '#fff', overflow: "auto", position: "fixed", right: "0" }}
         >
-          <Collapse onChange={() => {}} style={{overflow: "auto", maxHeight: '93vh'}}>
+          <Collapse bordered={false} onChange={() => {}} style={{overflow: "auto", overflowX: "hidden", maxHeight: '93vh', background: 'rgba(0, 0, 0, 0)'}}>
             {/* 
               ***
               Target
@@ -203,7 +220,27 @@ export default class NetworkView extends Component<Props, State> {
             */}
             <Collapse.Panel header="Target">    
               <Form>
-                <OptionField label='Target' type='text' onChange={this.setTarget.bind(this)} onApply={this.regenerate.bind(this)} value={this.state.target} />
+                {/*<OptionField label='Target' type='text' onChange={this.setTarget.bind(this)} onApply={this.regenerate.bind(this)} value={this.state.target} />*/}
+                <FormItem {...formItemLayout} label="Target">
+                  <Select
+                    showSearch
+                    filterOption={false}
+                    style={{ width: '100%' }}
+                    placeholder="Search an item"
+                    value={this.state.target}
+                    onSearch={value => this.setTarget(value)}
+                    onChange={value => {this.setTarget(value); this.regenerate()}}
+                    onSelect={value => {this.setTarget(value); this.regenerate()}}
+                  >
+                    {Object.entries(stores.nameMaps.list)
+                      .filter(item => (this.state.target.toLowerCase().replace('@', '').split(' ').every(input => (item[0].includes(input) || item[1].toLowerCase().includes(input)))
+                        /*|| (this.state.target.includes("@"))*/) 
+                        && this.state.target !== '')
+                      .slice(0, 20).map((item, i) => 
+                      <Option key={i} value={item[0]}>{item[1]}</Option>
+                    )}
+                  </Select>
+                </FormItem>
                 <OptionField label='Amount' type='number' onChange={this.setTargetAmount.bind(this)} onApply={this.regenerate.bind(this)} value={this.state.targetAmount.toString()} />
               </Form>
             </Collapse.Panel>
@@ -293,8 +330,8 @@ export default class NetworkView extends Component<Props, State> {
               Actions
               ***
             */}
-            <Collapse.Panel header="Actions">
-              <Button onClick={() => this.regenerate()}>Reload Network</Button><br /><br />
+            <Collapse.Panel header="Actions" className="actions">
+              <Button onClick={() => this.regenerate()}>Reload Network</Button><br />
               <Button onClick={() => {this.props.network.newSeed(); this.regenerate()}}>Randomize seed</Button>
             </Collapse.Panel>
 
@@ -305,7 +342,7 @@ export default class NetworkView extends Component<Props, State> {
             */}
             {this.state.selectedNode.stack && this.state.selectedNode.id !== -1 ? 
               <Collapse.Panel header="Selected Node">
-                <ItemList label="" items={[this.state.selectedNode.stack]} />
+                <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="" items={[this.state.selectedNode.stack]} />
               </Collapse.Panel> : ''
             }
 
@@ -323,9 +360,9 @@ export default class NetworkView extends Component<Props, State> {
                     <TabPane tab={<Avatar src={
                       `file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${recipe.outputs[0].names[0].replace(/:/g, "_")}.png`
                     } />} key={i}>
-                      <ItemList label="Catalysts" items={recipe.catalysts} />
-                      <ItemList label="Inputs" items={recipe.inputs.filter(item => item.names.length > 0 && item.amount > 0)} />
-                      <ItemList label="Outputs" items={recipe.outputs.filter(item => item.names.length > 0 && item.amount > 0)} />   
+                      <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="Catalysts" items={recipe.catalysts} />
+                      <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="Inputs" items={recipe.inputs.filter(item => item.names.length > 0 && item.amount > 0)} />
+                      <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="Outputs" items={recipe.outputs.filter(item => item.names.length > 0 && item.amount > 0)} />   
                     </TabPane>
                   )}
                 </Tabs>

@@ -3,7 +3,7 @@
 import React, {PropTypes, Component} from 'react';
 import { observer } from 'mobx-react';
 import { Link, Redirect } from 'react-router-dom';
-import { Tabs, Layout, Row, Col, Select } from 'antd';
+import { Tabs, Layout, Row, Col, Select, Icon, Button } from 'antd';
 const TabPane = Tabs.TabPane;
 const Option = Select.Option;
 
@@ -15,14 +15,14 @@ import { stores, appInstance } from '../App';
 import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
 import Settings from '../stores/Settings';
 import style from './style/HomePage.css';
+import uuidv4 from 'uuid/v4';
 
 type Props = {
   settings: Settings  
 }
 
 type State = {
-  activeKey: string,
-  addProfile: boolean
+  addProfile: boolean,
 }
 
 @observer
@@ -33,11 +33,15 @@ class HomePage extends Component<Props, State> {
     super(props);
     this.newTabIndex = 0;
     this.state = {
-      activeKey: this.props.settings.getCurrentProfile().networks.selectedNetwork,
-      addProfile: false
+      addProfile: false,
     };
 
     console.log(this.props.settings.list)
+  }
+
+  toggle() {
+    let networks = this.props.settings.getCurrentProfile().networks
+    networks.list.find(network => network.id == networks.selectedNetwork).collapsed = !networks.list.find(network => network.id == networks.selectedNetwork).collapsed;
   }
 
   update() {
@@ -65,42 +69,57 @@ class HomePage extends Component<Props, State> {
     }
   }
 
-  add = () => {
+  add = (stack: Stack = new Stack(['']), networkData: ?Object = null) => {
     let network = this.props.settings.getCurrentProfile().networks.addNetwork(new Network(new Stack([''])));
-    network.setRecipes(stores.recipes);
-    //network.setAlgorithm(NetworkAlgorithms[0]);
-    network.setVisOptions({
-      nodes: {
-        shape: 'image'
-      },
-      edges: {
-        width: 7,
-        arrows: {
-          middle: {enabled: true, scaleFactor: -1}
+
+    if (!networkData) {
+      network.setRecipes(stores.recipes);
+      network.setAlgorithm(0);
+      //network.setAlgorithm(NetworkAlgorithms[0]);
+      network.setVisOptions({
+        nodes: {
+          shape: 'image'
         },
-        color: {inherit: 'to'}
-      },
-      physics: {
-        enabled: true,
-        barnesHut: {
-          springLength: 250,
-          springConstant: 0.003,
-          damping: 0.1
+        edges: {
+          width: 7,
+          arrows: {
+            middle: {enabled: true, scaleFactor: -1}
+          },
+          color: {inherit: 'to'}
+        },
+        physics: {
+          enabled: true,
+          barnesHut: {
+            springLength: 250,
+            springConstant: 0.003,
+            damping: 0.1
+          }
+        },
+        layout: {
+          hierarchical: {
+            enabled: false,
+          }
         }
-      },
-      layout: {
-        hierarchical: {
-          enabled: false,
-          nodeSpacing: 1000
-        }
-      }
-    })
-    this.setState({ activeKey: network.id });
+      });
+      network.setLayout(0);
+    } else {
+      networkData.id = uuidv4();
+      network.deserialize(networkData);
+      network.setRecipes(stores.recipes);
+      network.setTarget(stack.names[0]);
+    }
+
+    this.props.settings.getCurrentProfile().networks.selectedNetwork = network.id;
+    
+    this.setState({});
   }
   
   remove = (targetKey: number) => {
-    this.props.settings.getCurrentProfile().networks.selectedNetwork = this.props.settings.getCurrentProfile().networks.list[0].id;
-    this.props.settings.getCurrentProfile().networks.networks = this.props.settings.getCurrentProfile().networks.list.filter(network => network.id !== targetKey);
+    let networks = this.props.settings.getCurrentProfile().networks;
+    if (networks.selectedNetwork == targetKey) {
+      networks.selectedNetwork = networks.list[0].id;
+    }
+    networks.networks = networks.list.filter(network => network.id !== targetKey);
     this.setState({});
   }
 
@@ -109,7 +128,7 @@ class HomePage extends Component<Props, State> {
       this.state.addProfile ? <Redirect to="/firstlaunch" push={true} /> :
       <div>
         <Row>
-          <Col span={21}>
+          <Col span={16}>
             <Tabs 
               type="editable-card"
               onChange={this.onChange}
@@ -122,12 +141,12 @@ class HomePage extends Component<Props, State> {
                   tab={stores.nameMaps.list[network.getTarget] ? stores.nameMaps.list[network.getTarget] : network.getTarget} 
                   key={network.id}
                 >
-                  <NetworkView network={network} updateParent={() => this.update()} />
+                  <NetworkView addNetwork={this.add.bind(this)} network={network} updateParent={() => this.update()} />
                 </TabPane>
               )}
             </Tabs>
           </Col>
-          <Col span={3} className="header-row">
+          <Col span={4} className="header-row">
             <Select className='select-profile' value={this.props.settings.getCurrentProfile().name} onChange={value => this.changeProfile(value)}>
               {this.props.settings.list.profiles.map((profile, i) => 
                 <Option key={i} value={i}>{profile.name}</Option>
@@ -135,6 +154,29 @@ class HomePage extends Component<Props, State> {
               <Option key='add' value='add'>New profile ...</Option>
             </Select>
           </Col>
+          <Col span={2} className="header-row" style={{height: '50px'}}>
+            <Link to='/settings'>
+              <Button
+                style={{float: 'right', marginRight: '12px'}} 
+              >
+                <Icon         
+                  className="trigger"
+                  type='setting'       
+                />
+              </Button>
+            </Link>
+          </Col>
+          <Col span={2} className="header-row" style={{height: '50px'}}>
+            <Button
+              onClick={() => this.toggle()}
+              style={{float: 'right', marginRight: '12px'}} 
+            >
+              <Icon         
+                className="trigger"
+                type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}       
+              />
+            </Button>
+          </Col>       
         </Row>     
       </div>
     );

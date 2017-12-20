@@ -18,7 +18,7 @@ export default class EditableList extends Component<Props> {
   render() {return (
     <List
       size="small"
-      bordered
+      bordered={false}
       dataSource={this.props.items}
       renderItem={item => (
         <List.Item actions={[<Icon type="close" onClick={() => this.props.onRemove(item)} />]}>         
@@ -26,7 +26,7 @@ export default class EditableList extends Component<Props> {
         </List.Item>
       )}
       footer={(
-        <Row>
+        <Row gutter={8}>
           <Col span={18}>
             <Input
               placeholder="Add Item"

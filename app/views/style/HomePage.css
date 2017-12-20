@@ -21,18 +21,46 @@ Tweaking margins until it looks right!
   margin-top: 10px;
 }
 
-.tabs .ant-tabs-extra-content {
+.ant-tabs-extra-content {
   width: 40px;
   height: 50px;
   margin-top: -5px;
 }
 
-.tabs .ant-tabs-new-tab, .ant-tabs-new-tab::before {
+.ant-tabs-new-tab {
+  margin-left: 5px;
+}
+
+.ant-tabs-new-tab, .ant-tabs-new-tab::before {
   width: 32px !important;
   height: 32px !important;
   font-size: 15px;
 }
 
-.tabs .ant-tabs-new-tab::before {
+.tabs>.ant-tabs-bar .ant-tabs-new-tab::before {
   margin-top: 5px;
+}
+
+.tabs>.ant-tabs-content {
+  width: 100vw !important;
+}
+
+.tabs {
+  overflow: visible !important;
+}
+
+.tabs>.ant-tabs-bar>.ant-tabs-nav-container {
+  margin-left: 10px;
+}
+
+.header-row.ant-col-2 {
+  width: 55px;
+}
+
+.header-row.ant-col-4 {
+  width: 200px;
+}
+
+.ant-col-16 {
+  width: calc(100vw - 310px);
 }

@@ -3,7 +3,7 @@
 import React, {PropTypes, Component} from 'react';
 import { observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
-import { Layout, Steps, Input, Row, Col, Button } from 'antd';
+import { Layout, Steps, Input, Row, Col, Button, Icon } from 'antd';
 const Step = Steps.Step;
 import { stores, appInstance } from '../App';
 import Settings from '../stores/Settings';
@@ -42,6 +42,10 @@ class CreateProfilePage extends Component<Props, State> {
       nameInputValue: '',
       profileIndex: null
     };
+  }
+
+  cancel() {
+    this.props.settings.changeSettings(settings => settings.profiles = settings.profiles.filter((profile, i) => i != this.state.profileIndex));
   }
 
   onChangeName(path: string) {
@@ -131,8 +135,7 @@ class CreateProfilePage extends Component<Props, State> {
         {
           title: "Done",
           content: () => <div>
-            You're ready to start using Minecraft Recipe Viewer!<br />
-            You can always change your game directory in the settings.<br /><br />
+            Sucessfully added a new profile!<br /><br />
             <Link to="/"><Button type='primary'>Let's go</Button></Link>
           </div>
         }
@@ -143,12 +146,15 @@ class CreateProfilePage extends Component<Props, State> {
   render() {
 
     return (
-      <Layout className='flpLayout'>
-        <Steps current={this.state.currentStep}>
-          {this.state.steps.map(item => <Step key={item.title} title={item.title} />)}
-        </Steps>
-        <div className="steps-content">{this.state.steps[this.state.currentStep].content(this.state)}</div>
-      </Layout>
+      <div className="create-profile">
+        <Link to="/" onClick={() => this.cancel()}><Icon className="close-icon" type="close" /></Link>
+        <Layout className='flpLayout'>
+          <Steps current={this.state.currentStep}>
+            {this.state.steps.map(item => <Step key={item.title} title={item.title} />)}
+          </Steps>
+          <div className="steps-content">{this.state.steps[this.state.currentStep].content(this.state)}</div>
+        </Layout>
+      </div>
     );
   }
 }

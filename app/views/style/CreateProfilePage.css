@@ -19,6 +19,27 @@
   background-color: #ffffff;
 }
 
+.close-icon {
+  position: fixed;
+  top: 10px;
+  right: 0px;
+  width: 50px;
+  height: 50px;
+  font-size: 25px; 
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.close-icon:hover {
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.create-profile {
+  height: 100vh;
+  width: 100vw;
+}
+
 body, html {
   overflow: hidden !important; /*I have to do this for some reason*/
 }
+

@@ -32,7 +32,7 @@ app.on('activate', () => {
 
 function createWindow() {
   const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize;
-  const win = new BrowserWindow({width, height});
+  const win = new BrowserWindow({width, height, icon: path.join(__dirname, '/build/icon.ico')});
 
   win.loadURL(url.format({
     pathname: path.join(path.resolve(__dirname, './'), 'index.html'),
