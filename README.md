@@ -10,7 +10,7 @@ Currently x86_64 only, but you can request x86 binaries if needed.
 
 Windows users can run the installer, I tested it in wine and it worked.  
 Linux users can use the AppImage. Alternative packages or binaries can be requested if your distribution doesn't support AppImage.  
-Mac users can download the zip containing a .app file. I can't provide .dmg files unfortunately, neither am I able to test the current binary for OS X.  
+Mac users can download the zip containing a .app file. I can't provide .dmg files unfortunately, neither am I able to test the current binary for macOS.  
 
 You also have to install [JEIExporter](https://github.com/Danacus/JEIExporter)!
 
