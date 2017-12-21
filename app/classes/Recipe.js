@@ -7,11 +7,14 @@ export default class Recipe {
   outputs: Stack[];
   catalysts: Stack[];
   id: number;
+  props: Object;
+
   constructor(inputs: Stack[], outputs: Stack[], catalysts: Stack[], id: number) {
     this.inputs = inputs;
     this.outputs = outputs;
     this.catalysts = catalysts;
     this.id = id;
+    this.props = {};
   }
 
   isWhitelisted(list: RegExp[]): boolean {

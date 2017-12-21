@@ -10,6 +10,7 @@ export default class Edge {
   recipe: Recipe;
   recipeIndex: number;
   id: number;
+  props: Object;
 
   constructor(parent: Node, child: Node, recipe: Recipe, index: number, id: number) {
     this.parent = parent;
@@ -17,5 +18,6 @@ export default class Edge {
     this.recipe = recipe;
     this.recipeIndex = index;
     this.id = id;
+    this.props = {};
   }
 }

@@ -11,6 +11,7 @@ export default class Node {
   image: string;
   amount: number;
   group: number;
+  props: Object;
 
   constructor(stack: Stack, id: number, amount: number = 0, group: number = 0) {
     this.parents = [];
@@ -20,6 +21,7 @@ export default class Node {
     this.image = '';
     this.amount = amount;
     this.group = group;
+    this.props = {};
   }
 
   getChildren(): Node[] {

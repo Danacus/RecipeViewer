@@ -7,7 +7,7 @@ import Stack from '../Stack';
 import Recipes from '../../stores/Recipes';
 import Filter from "../Filter";
 
-export default class DefaultAlgorithm implements INetworkAlgorithm {
+export default class ResourceFriendly implements INetworkAlgorithm {
   target: Stack;
   recipes: Recipes;
   filteredRecipes: Recipes;
@@ -25,7 +25,7 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
   }
 
   static name(): string {
-    return "Default"
+    return "Resource Friendly"
   }
 
   generateNetwork(): any {
@@ -48,18 +48,29 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
 
     let parentRecipes = this.filteredRecipes.getRecipesWithOutput(node.stack);
 
-    parentRecipes.forEach((recipe, i, recipes) => {
-      recipe.inputs.forEach(input => {
+    if (parentRecipes.length > 0) {
+      let bestRecipe = null;
+
+      parentRecipes.forEach((recipe, i, recipes) => {
+        let price = recipe.inputs.reduce((total, input) => total + input.amount, 0) / recipe.outputs.reduce((total, output) => total + output.amount, 0);
+
+        if (!bestRecipe || price < bestRecipe.price) {
+          recipe.props.price = price;
+          bestRecipe = recipe;
+        }
+      });
+  
+      bestRecipe.inputs.forEach(input => {
         if (input.names.length > 0 && !node.children.some(child => child.stack.equals(input))) {
-          let output = recipe.outputs.find(output => output.equals(node.stack));
+          let output = bestRecipe.outputs.find(output => output.equals(node.stack));
           let outputAmount = output ? output.amount : 1;
-          let n: Node = new Node(input, this.nodes.length + 1, Math.round(100 * node.amount * (input.amount / outputAmount)) / 100, recipe.id);
+          let n: Node = new Node(input, this.nodes.length + 1, Math.round(100 * node.amount * (input.amount / outputAmount)) / 100, bestRecipe.id);
           n.addChild(node);  
           node.addParent(n);
-          this.edges.push(new Edge(n, node, recipe, i, this.edges.length + 1));
+          this.edges.push(new Edge(n, node, bestRecipe, 0, this.edges.length + 1));
           this.createNode(n, depth + 1);
         } 
       });
-    });
+    }
   }
 }
