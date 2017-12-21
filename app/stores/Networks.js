@@ -29,5 +29,9 @@ export default class Networks {
     this.networks.push(network);
     return network;
   }
+
+  getSelectedNetwork(): ?Network {
+    return this.networks.find(network => network.id == this.selectedNetwork);
+  }
 }
 

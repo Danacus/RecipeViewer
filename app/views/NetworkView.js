@@ -45,11 +45,15 @@ type State = {
   physicsEnabled: boolean
 }
 
+let networkViewInstance;
+
 @observer
 export default class NetworkView extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
+
+    networkViewInstance = this;
 
     this.state = {
       collapsed: false,
@@ -81,7 +85,7 @@ export default class NetworkView extends Component<Props, State> {
   }
 
   addWhitelistItem() {
-    this.props.network.addWhitelistItem(new RegExp(this.state.whitelistAdd, "i"));
+    this.props.network.filter.addWhitelistItem(new RegExp(this.state.whitelistAdd, "i"));
     this.regenerate();
     if (this.state.whitelistInput) {
       this.state.whitelistInput.input.value = "";
@@ -91,7 +95,7 @@ export default class NetworkView extends Component<Props, State> {
   }
 
   addBlacklistItem(input: any) {
-    this.props.network.addBlacklistItem(new RegExp(this.state.blacklistAdd, "i"));
+    this.props.network.filter.addBlacklistItem(new RegExp(this.state.blacklistAdd, "i"));
     this.regenerate();
 
     if (this.state.blacklistInput) {
@@ -103,12 +107,12 @@ export default class NetworkView extends Component<Props, State> {
   }
 
   removeWhitelistItem(item: string) {
-    this.props.network.removeWhitelistItem(item);
+    this.props.network.filter.removeWhitelistItem(item);
     this.regenerate();
   }
 
   removeBlacklistItem(item: string) {
-    this.props.network.removeBlacklistItem(item);
+    this.props.network.filter.removeBlacklistItem(item);
     this.regenerate();
   }
 
@@ -256,10 +260,10 @@ export default class NetworkView extends Component<Props, State> {
                   <Select
                     placeholder="Select an algorithm"
                     onSelect={key => this.setAlgorithm(key)}
-                    value={NetworkAlgorithms[this.state.selectedAlgorithm].name}
+                    value={NetworkAlgorithms[this.state.selectedAlgorithm].name()}
                   >
                     {NetworkAlgorithms.map((alg, index) => 
-                      <Option key={index}>{alg.name}</Option>
+                      <Option key={index}>{alg.name()}</Option>
                     )}
                   </Select>
                 </FormItem>
@@ -375,3 +379,5 @@ export default class NetworkView extends Component<Props, State> {
     )
   }
 }
+
+export { networkViewInstance }

@@ -10,6 +10,7 @@ import Recipes from '../stores/Recipes';
 import { stores } from '../App';
 import { NetworkAlgorithms } from './NetworkAlgorithm/NetworkAlgorithms';
 import Edge from './Edge';
+import Filter from './Filter';
 
 export const NetworkLayouts = [
   {
@@ -40,8 +41,7 @@ export default class Network {
   visNodes: vis.DataSet;
   visEdges: vis.DataSet;
   visOptions: any;
-  @observable whitelist: RegExp[];
-  @observable blacklist: RegExp[];
+  @observable filter: Filter;
   @observable algorithm: number;
   algorithmInstance: INetworkAlgorithm;
   recipes: Recipes;
@@ -55,8 +55,7 @@ export default class Network {
   constructor(target: Stack) {
     this.target = target;
     this.id = uuidv4();
-    this.whitelist = [];
-    this.blacklist = [];
+    this.filter = new Filter([], []);
     this.limit = 100;
     this.depth = 3;
     this.algorithm = 0;
@@ -67,8 +66,7 @@ export default class Network {
       target: this.target.serialize(),
       visOptions: this.visOptions,
       id: this.id,
-      whitelist: this.whitelist.map(item => item.source),
-      blacklist: this.blacklist.map(item => item.source),
+      filter: this.filter.serialize(),
       algorithm: this.algorithm,
       limit: this.limit,
       depth: this.depth,
@@ -81,8 +79,15 @@ export default class Network {
     this.target.deserialize(data.target);
     this.visOptions = data.visOptions;
     this.id = data.id;
-    this.whitelist = data.whitelist.map(item => new RegExp(item, "i"));
-    this.blacklist = data.blacklist.map(item => new RegExp(item, "i"));
+    if (data.filter) {
+      this.filter = this.filter.deserialize(data.filter);
+    }
+    if (data.whitelist && data.blacklist) {
+      // Migration
+      this.filter.whitelist = data.whitelist.map(item => new RegExp(item, "i"));
+      this.filter.blacklist = data.blacklist.map(item => new RegExp(item, "i"));
+    }
+    this.algorithm = data.algorithm;
     this.limit = data.limit;
     this.depth = data.depth;
     this.seed = data.seed;
@@ -100,8 +105,8 @@ export default class Network {
     this.algorithmInstance.recipes = this.recipes;
     this.algorithmInstance.limit = this.limit;
     this.algorithmInstance.depth = this.depth - 1;
-    this.algorithmInstance.whitelist = this.whitelist;
-    this.algorithmInstance.blacklist = this.blacklist;
+    this.algorithmInstance.filter = this.filter;
+    console.log(this.algorithmInstance.filter);
 
     let obj = this.algorithmInstance.generateNetwork(); 
     this.nodes = obj.nodes;
@@ -138,7 +143,7 @@ export default class Network {
     this.id = uuidv4();
   }
 
-  setRecipes(recipes: Recipes) {
+  @action setRecipes(recipes: Recipes) {
     this.recipes = recipes;
   }
 
@@ -156,30 +161,6 @@ export default class Network {
     if (this.nodes && this.edges) {
       this.visReload();
     }
-  }
-
-  @action setWhitelist(whitelist: RegExp[]) {
-    this.whitelist = whitelist;
-  }
-
-  @action setBlacklist(blacklist: RegExp[]) {
-    this.blacklist = blacklist;
-  }
-
-  @action addWhitelistItem(item: RegExp) {
-    this.whitelist.push(item);
-  }
-
-  @action addBlacklistItem(item: RegExp) {
-    this.blacklist.push(item);
-  }
-
-  @action removeWhitelistItem(item: string) {
-    this.whitelist = this.whitelist.filter(i => i.toString() != item);
-  }
-
-  @action removeBlacklistItem(item: string) {
-    this.blacklist = this.blacklist.filter(i => i.toString() != item);
   }
 
   @action setTarget(target: string) {
@@ -203,11 +184,11 @@ export default class Network {
   }
 
   @computed get getWhitelist(): string[] {
-    return this.whitelist.map(i => i.toString())
+    return this.filter.whitelist.map(i => i.source)
   }
 
   @computed get getBlacklist(): string[] {
-    return this.blacklist.map(i => i.toString())
+    return this.filter.blacklist.map(i => i.source)
   }
 
   @computed get listAllAlgortihms(): string[] {

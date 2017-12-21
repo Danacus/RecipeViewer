@@ -17,6 +17,7 @@ import Settings from './stores/Settings';
 import DefaultAlgorithm from './classes/NetworkAlgorithm/DefaultAlgorithm';
 import { withRouter } from "react-router";
 import NameMaps from "./stores/NameMaps";
+import { networkViewInstance } from "./views/NetworkView";
 
 export const stores = {
   //networks: new Networks(),
@@ -57,9 +58,14 @@ export default class App extends Component<Props, State> {
     };
 
     stores.settings.loadSettings().then(settings => {
+      stores.recipes.recipes = [];
       if (settings) {
-        stores.recipes.loadRecipes(settings.getCurrentProfile().path).then(() => {
-          stores.nameMaps.loadTooltipMap(settings.getCurrentProfile().path).then(() => {
+        stores.recipes.loadRecipes(stores.settings.getCurrentProfile().path).then(() => {
+          stores.nameMaps.loadTooltipMap(stores.settings.getCurrentProfile().path).then(() => {
+            //stores.settings.getCurrentProfile().networks.list.forEach(network => network.generate());
+            if (networkViewInstance) {
+              networkViewInstance.regenerate();
+            }
             this.setState({ready: true});
           });
         });

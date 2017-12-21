@@ -58,7 +58,7 @@ export default class Settings {
 
   saveSettings() {
     let file = app.getPath('userData') + "/settings.json";
-    jetpack.writeAsync(file, {profiles: this.settings.profiles.map(profile => ({name: profile.name, path: profile.path, networks: profile.networks.serialize()})), selectedProfile: this.settings.selectedProfile});
+    return jetpack.writeAsync(file, {profiles: this.settings.profiles.map(profile => ({name: profile.name, path: profile.path, networks: profile.networks.serialize()})), selectedProfile: this.settings.selectedProfile});
   }
 
   @computed get list(): Object {

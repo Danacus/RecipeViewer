@@ -64,7 +64,9 @@ class HomePage extends Component<Props, State> {
       this.props.settings.selectProfile(parseInt(profile));
       this.setState({});
       if (appInstance) {
-        appInstance.reset();
+        stores.settings.saveSettings().then(() => {
+          appInstance.reset();
+        });
       }
     }
   }

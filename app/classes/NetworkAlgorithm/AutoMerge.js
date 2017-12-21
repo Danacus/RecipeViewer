@@ -7,7 +7,7 @@ import Stack from '../Stack';
 import Recipes from '../../stores/Recipes';
 import Filter from "../Filter";
 
-export default class DefaultAlgorithm implements INetworkAlgorithm {
+export default class AutoMerge implements INetworkAlgorithm {
   target: Stack;
   recipes: Recipes;
   filteredRecipes: Recipes;
@@ -25,7 +25,7 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
   }
 
   static name(): string {
-    return "Default Algorithm"
+    return "Auto Merge"
   }
 
   generateNetwork(): any {
@@ -33,13 +33,13 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
     // When you realize you should be using Immutable instead
     this.filteredRecipes = new Recipes(this.recipes.list.slice());
     this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
-    console.log(this.recipes.list.length);
     this.counter = 0;
-    this.createNode(targetNode, 0);
+    this.createNode(targetNode, 0, []);
+    this.reduceEdges();
     return {nodes: this.nodes, edges: this.edges};
   }
 
-  createNode(node: Node, depth: number) {
+  createNode(node: Node, depth: number, nodes: Node[]) {
     this.nodes.push(node);
     this.counter++;
 
@@ -52,15 +52,32 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
     parentRecipes.forEach((recipe, i, recipes) => {
       recipe.inputs.forEach(input => {
         if (input.names.length > 0) {
-          let output = recipe.outputs.find(output => output.equals(node.stack));
-          let outputAmount = output ? output.amount : 1;
-          let n: Node = new Node(input, this.nodes.length + 1, Math.round(100 * node.amount * (input.amount / outputAmount)) / 100, recipe.id);
-          n.addChild(node);  
-          node.addParent(n);
-          this.edges.push(new Edge(n, node, recipe, i, this.edges.length + 1));
-          this.createNode(n, depth + 1);
+          let equalNode = nodes.find(node => node.stack.equals(input))
+          if (equalNode) {
+            equalNode.addChild(node);  
+            node.addParent(equalNode);
+            nodes.push(equalNode);
+            this.edges.push(new Edge(equalNode, node, recipe, i, this.edges.length + 1));
+          } else {
+            let n: Node = new Node(input, this.nodes.length + 1, 0, recipe.id);
+            n.addChild(node);  
+            node.addParent(n);
+            nodes.push(n);
+            this.edges.push(new Edge(n, node, recipe, i, this.edges.length + 1));
+            this.createNode(n, depth + 1, nodes);
+          }    
         } 
       });
     });
+  }
+
+  reduceEdges() {
+    this.edges = this.edges.reduce((total, current) => {
+      if (!total.some(edge => edge.child.stack.equals(current.child.stack) && edge.parent.stack.equals(current.parent.stack))) {
+        total.push(current);
+      }
+
+      return total;
+    }, [])
   }
 }
