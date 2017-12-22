@@ -4,6 +4,7 @@ import jetpack from 'fs-jetpack';
 import electron from 'electron';
 import Networks from "./Networks";
 import { stores } from "../App";
+import { observable, computed } from 'mobx';
 const app = electron.remote.app;
 
 export default class Settings {

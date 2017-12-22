@@ -21,6 +21,7 @@ const { Meta } = Card;
 
 import style from './style/NetworkView.css';
 import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
+import { observer } from 'mobx-react';
 
 type Props = {
   network: Network,

@@ -6,7 +6,7 @@ import { Layout, Steps, Icon, Form } from 'antd';
 const Step = Steps.Step;
 import Settings from '../stores/Settings';
 import OptionField from './components/OptionField';
-
+import { observer } from 'mobx-react';
 
 type Props = {
   settings: Settings 

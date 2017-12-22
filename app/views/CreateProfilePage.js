@@ -11,6 +11,7 @@ import jetpack from 'fs-jetpack';
 import electron from 'electron';
 import Networks from '../stores/Networks';
 const app = electron.remote.app;
+import { observer } from 'mobx-react';
 
 type Props = {
   settings: Settings 

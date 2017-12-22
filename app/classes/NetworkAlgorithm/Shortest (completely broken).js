@@ -6,8 +6,9 @@ import Edge from "../Edge";
 import Stack from '../Stack';
 import Recipes from '../../stores/Recipes';
 import Filter from "../Filter";
+import Recipe from "../Recipe";
 
-export default class ResourceFriendly implements INetworkAlgorithm {
+export default class Shortest implements INetworkAlgorithm {
   target: Stack;
   recipes: Recipes;
   filteredRecipes: Recipes;
@@ -25,7 +26,7 @@ export default class ResourceFriendly implements INetworkAlgorithm {
   }
 
   static name(): string {
-    return "Resource Friendly"
+    return "Shortest"
   }
 
   generateNetwork(): any {
@@ -49,16 +50,7 @@ export default class ResourceFriendly implements INetworkAlgorithm {
     let parentRecipes = this.filteredRecipes.getRecipesWithOutput(node.stack);
 
     if (parentRecipes.length > 0) {
-      let bestRecipe = null;
-
-      parentRecipes.forEach((recipe, i, recipes) => {
-        let price = recipe.inputs.reduce((total, input) => total + input.amount, 0) / recipe.outputs.reduce((total, output) => total + output.amount, 0);
-
-        if (!bestRecipe || price < bestRecipe.price) {
-          recipe.props.price = price;
-          bestRecipe = recipe;
-        }
-      });
+      let bestRecipe = this.getCheapest(node.stack).recipe;
   
       bestRecipe.inputs.forEach(input => {
         if (input.names.length > 0 && !node.children.some(child => child.stack.equals(input))) {
@@ -72,5 +64,34 @@ export default class ResourceFriendly implements INetworkAlgorithm {
         } 
       });
     }
+  }
+
+  getCheapest(item: Stack): Object {
+    let parentRecipes = this.filteredRecipes.getRecipesWithOutput(item);
+    let best;
+
+    parentRecipes.forEach(recipe => {
+      let price = recipe.inputs.reduce((total, input) => 
+        total + this.getCheapest(input).recipe.price
+      , 0) / recipe.outputs.reduce((total, output) => 
+        total + this.getCheapest(output).recipe.price
+      , 0);
+
+      if (!best || price < best.price) {
+        recipe.props.price = price;
+        best = recipe;
+      }
+    })
+
+    let obj = {recipe: best, isResource: false}
+
+    if (parentRecipes.length == 0) {
+      obj.isResource = true;
+      obj.recipe = {price: item.amount}
+    } else {
+      obj = {recipe: best, isResource: false}
+    }
+
+    return obj;
   }
 }
