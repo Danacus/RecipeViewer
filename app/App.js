@@ -1,23 +1,15 @@
 // @flow
 
-require("react-hot-loader/patch");
-
-import React, {Component}from 'react';
-import {HashRouter, Route, Link, Redirect} from 'react-router-dom';
+import React, {Component} from 'react';
+import { HashRouter, Route, Redirect } from 'react-router-dom';
 import {Provider} from 'mobx-react';
 
-import Networks from './stores/Networks';
 import Recipes from './stores/Recipes';
 import HomePage from './views/HomePage';
 import CreateProfilePage from './views/CreateProfilePage';
 import SettingsPage from './views/SettingsPage';
-import Network from './classes/Network';
-import Stack from './classes/Stack';
 import Settings from './stores/Settings';
-import DefaultAlgorithm from './classes/NetworkAlgorithm/DefaultAlgorithm';
-import { withRouter } from "react-router";
 import NameMaps from "./stores/NameMaps";
-import { networkViewInstance } from "./views/NetworkView";
 
 export const stores = {
   //networks: new Networks(),

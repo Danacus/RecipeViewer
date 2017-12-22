@@ -1,12 +1,10 @@
 // @flow
 
-import React, {PropTypes, Component} from 'react';
-import { observer } from 'mobx-react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Layout, Steps, Input, Row, Col, Button, Icon, Form } from 'antd';
+import { Layout, Steps, Icon, Form } from 'antd';
 const Step = Steps.Step;
 import Settings from '../stores/Settings';
-import style from './style/SettingsPage.css';
 import OptionField from './components/OptionField';
 
 
@@ -20,7 +18,7 @@ type State = {
 }
 
 @observer
-class SettingsPage extends Component<Props, State> {
+class SettingsPage extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
 

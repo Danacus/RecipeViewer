@@ -1,14 +1,14 @@
 // @flow
 
-import React, {Component} from 'react';
-import {Layout, Menu, List, Collapse, Input, Button, Row, Col, Icon, Select, Card, Avatar, Form, Tabs, Checkbox} from 'antd';
+import React from 'react';
+import { Layout, Menu, Collapse, Input, Button, Select, Card, Avatar, Form, Tabs, Checkbox } from 'antd';
 import Network, { NetworkLayouts } from '../classes/Network';
-import { observer } from 'mobx-react';
 import Node from '../classes/Node';
 import Stack from '../classes/Stack';
 import { stores } from '../App';
 import Recipe from '../classes/Recipe';
-import OptionField, { formItemLayout } from './components/OptionField';
+import OptionField from './components/OptionField';
+import OptionSelect, { formItemLayout } from './components/OptionSelect';
 import ItemList from './components/ItemList';
 import EditableList from './components/EditableList';
 const SubMenu = Menu.SubMenu;
@@ -32,7 +32,7 @@ type State = {
   collapsed: boolean,
   whitelistAdd: string, 
   blacklistAdd: string,
-  selectedNode: Node,
+  selectedNode: ?Node,
   selectedRecipes: Recipe[],
   blacklistInput: ?Input,
   whitelistInput: ?Input,
@@ -41,7 +41,7 @@ type State = {
 let networkViewInstance;
 
 @observer
-export default class NetworkView extends Component<Props, State> {
+export default class NetworkView extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
@@ -52,17 +52,10 @@ export default class NetworkView extends Component<Props, State> {
       collapsed: false,
       whitelistAdd: '',
       blacklistAdd: '',
-      target: '',
-      limit: this.props.network.limit,
-      depth: this.props.network.depth,
-      targetAmount: this.props.network.target.amount,
-      selectedNode: new Node(new Stack(['']), -1),
+      selectedNode: null,
       selectedRecipes: [],
       blacklistInput: null,
       whitelistInput: null,
-      selectedAlgorithm: this.props.network.algorithm,
-      selectedLayout: this.props.network.selectedLayout,
-      physicsEnabled: this.props.network.visOptions.physics.enabled
     }
 
 
@@ -112,18 +105,6 @@ export default class NetworkView extends Component<Props, State> {
   setTarget(target: string) {
     this.props.network.setTarget(target);
     this.props.updateParent();
-  }
-
-  setLimit(limit: number) {
-    this.props.network.setLimit(limit);
-  }
-
-  setDepth(depth: number) {
-    this.props.network.setDepth(depth);
-  }
-
-  setTargetAmount(targetAmount: number) {
-    this.props.network.setTargetAmount(targetAmount);
   }
 
   setAlgorithm(index: number) {
@@ -206,7 +187,6 @@ export default class NetworkView extends Component<Props, State> {
             */}
             <Collapse.Panel header="Target">    
               <Form>
-                {/*<OptionField label='Target' type='text' onChange={this.setTarget.bind(this)} onApply={this.regenerate.bind(this)} value={this.state.target} />*/}
                 <FormItem {...formItemLayout} label="Target">
                   <Select
                     showSearch
@@ -214,20 +194,21 @@ export default class NetworkView extends Component<Props, State> {
                     style={{ width: '100%' }}
                     placeholder="Search an item"
                     value={this.props.network.target.names[0]}
-                    onSearch={value => this.setTarget(value)}
                     onChange={value => {this.setTarget(value); this.regenerate()}}
                     onSelect={value => {this.setTarget(value); this.regenerate()}}
                   >
                     {Object.entries(stores.nameMaps.list)
-                      .filter(item => (this.props.network.target.names[0].toLowerCase().replace('@', '').split(' ').every(input => (item[0].includes(input) || item[1].toLowerCase().includes(input)))
-                        /*|| (this.state.target.includes("@"))*/) 
-                        && this.props.network.target.names[0] !== '')
-                      .slice(0, 20).map((item, i) => 
+                      .filter(item => 
+                        this.props.network.target.names[0].toLowerCase().replace('@', '').split(' ').every(input => 
+                          item[0].includes(input) || (typeof item[1] == 'string' ? item[1] : '').toLowerCase().includes(input)
+                        ) 
+                        && this.props.network.target.names[0] !== ''
+                      ).slice(0, 20).map((item, i) => 
                       <Option key={i} value={item[0]}>{item[1]}</Option>
                     )}
                   </Select>
                 </FormItem>
-                <OptionField label='Amount' type='number' onChange={this.setTargetAmount.bind(this)} onApply={this.regenerate.bind(this)} value={this.props.network.target.amount.toString()} />
+                <OptionField label='Amount' type='number' onChange={this.props.network.setTargetAmount.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.target.amount.toString()} />
               </Form>
             </Collapse.Panel>
 
@@ -238,19 +219,9 @@ export default class NetworkView extends Component<Props, State> {
             */}
             <Collapse.Panel header="Algorithm">
               <Form>
-                <FormItem {...formItemLayout} label="Algorithm">
-                  <Select
-                    placeholder="Select an algorithm"
-                    onSelect={key => this.setAlgorithm(key)}
-                    value={NetworkAlgorithms[this.props.network.algorithm].name()}
-                  >
-                    {NetworkAlgorithms.map((alg, index) => 
-                      <Option key={index}>{alg.name()}</Option>
-                    )}
-                  </Select>
-                </FormItem>
-                <OptionField label='Limit' type='number' onChange={this.setLimit.bind(this)} onApply={this.regenerate.bind(this)} value={this.props.network.limit.toString()} />
-                <OptionField label='Depth' type='number' onChange={this.setDepth.bind(this)} onApply={this.regenerate.bind(this)} value={this.props.network.depth.toString()} />
+                <OptionSelect label='Algorithm' placeholder='Select an algorithm' onSelect={this.setAlgorithm.bind(this)} current={this.props.network.algorithm} items={NetworkAlgorithms.map(alg => alg.name())} />
+                <OptionField label='Limit' type='number' onChange={this.props.network.setLimit.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.limit.toString()} />
+                <OptionField label='Depth' type='number' onChange={this.props.network.setDepth.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.depth.toString()} />
               </Form>
             </Collapse.Panel>
 
@@ -261,17 +232,7 @@ export default class NetworkView extends Component<Props, State> {
             */}
             <Collapse.Panel header="Network">    
               <Form>
-                <FormItem {...formItemLayout} label="Layout">
-                  <Select
-                    placeholder="Select a layout"
-                    onSelect={key => this.setLayout(key)}
-                    value={NetworkLayouts[this.props.network.selectedLayout].name}
-                  >
-                    {NetworkLayouts.map((lay, index) => 
-                      <Option key={index}>{lay.name}</Option>
-                    )}
-                  </Select>
-                </FormItem>
+                <OptionSelect label='Layout' placeholder='Select a layout' onSelect={this.setLayout.bind(this)} current={this.props.network.selectedLayout} items={NetworkLayouts.map(lay => lay.name)} />
                 <Checkbox checked={this.props.network.visOptions.physics.enabled} onChange={() => this.togglePhysics()}>Enable physics</Checkbox>
                 <br /><br />
                 <p style={{fontSize: '12px'}}>More options coming soon! :) </p>
@@ -326,7 +287,7 @@ export default class NetworkView extends Component<Props, State> {
               Selected Node
               ***
             */}
-            {this.state.selectedNode.stack && this.state.selectedNode.id !== -1 ? 
+            {this.state.selectedNode ? 
               <Collapse.Panel header="Selected Node">
                 <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="" items={[this.state.selectedNode.stack]} />
               </Collapse.Panel> : ''
@@ -353,8 +314,7 @@ export default class NetworkView extends Component<Props, State> {
                   )}
                 </Tabs>
               </Collapse.Panel> : ''
-            }
-            
+            }    
           </Collapse>
         </Sider>
       </Layout>

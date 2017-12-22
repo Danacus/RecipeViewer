@@ -1,6 +1,5 @@
 // @flow
 
-import { observable, computed } from "mobx";
 import jetpack from 'fs-jetpack';
 import electron from 'electron';
 import Networks from "./Networks";
