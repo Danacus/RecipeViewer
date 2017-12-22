@@ -32,17 +32,10 @@ type State = {
   collapsed: boolean,
   whitelistAdd: string, 
   blacklistAdd: string,
-  target: string,
   selectedNode: Node,
   selectedRecipes: Recipe[],
-  limit: number,
-  depth: number,
-  targetAmount: number,
   blacklistInput: ?Input,
   whitelistInput: ?Input,
-  selectedAlgorithm: number,
-  selectedLayout: number,
-  physicsEnabled: boolean
 }
 
 let networkViewInstance;
@@ -119,39 +112,32 @@ export default class NetworkView extends Component<Props, State> {
   setTarget(target: string) {
     this.props.network.setTarget(target);
     this.props.updateParent();
-    this.setState({target});
   }
 
   setLimit(limit: number) {
     this.props.network.setLimit(limit);
-    this.setState({limit});
   }
 
   setDepth(depth: number) {
     this.props.network.setDepth(depth);
-    this.setState({depth});
   }
 
   setTargetAmount(targetAmount: number) {
     this.props.network.setTargetAmount(targetAmount);
-    this.setState({targetAmount});
   }
 
   setAlgorithm(index: number) {
     this.props.network.setAlgorithm(index);
-    this.setState({selectedAlgorithm: index})
     this.regenerate();
   }
 
   setLayout(index: number) {
     this.props.network.setLayout(index);
-    this.setState({selectedLayout: index})
     this.regenerate();
   }
 
   togglePhysics() {
     this.props.network.applyNetworkOptions(options => options.physics.enabled = !options.physics.enabled);
-    this.setState({physicsEnabled: this.props.network.visOptions.physics.enabled});
   }
 
   regenerate() {
@@ -178,6 +164,8 @@ export default class NetworkView extends Component<Props, State> {
           return total;
         }, [])
         this.setState({selectedRecipes: recipes})
+      } else {
+        this.setState({selectedRecipes: []})
       }    
      });
 
@@ -190,12 +178,6 @@ export default class NetworkView extends Component<Props, State> {
         this.regenerate();
       }
     });
-  }
-
-  componentWillMount() {
-    this.props.network.setAlgorithm(this.state.selectedAlgorithm);
-    this.props.network.setLayout(this.state.selectedLayout);
-    this.setState({target: this.props.network.getTarget});
   }
 
   componentDidMount() {
@@ -231,21 +213,21 @@ export default class NetworkView extends Component<Props, State> {
                     filterOption={false}
                     style={{ width: '100%' }}
                     placeholder="Search an item"
-                    value={this.state.target}
+                    value={this.props.network.target.names[0]}
                     onSearch={value => this.setTarget(value)}
                     onChange={value => {this.setTarget(value); this.regenerate()}}
                     onSelect={value => {this.setTarget(value); this.regenerate()}}
                   >
                     {Object.entries(stores.nameMaps.list)
-                      .filter(item => (this.state.target.toLowerCase().replace('@', '').split(' ').every(input => (item[0].includes(input) || item[1].toLowerCase().includes(input)))
+                      .filter(item => (this.props.network.target.names[0].toLowerCase().replace('@', '').split(' ').every(input => (item[0].includes(input) || item[1].toLowerCase().includes(input)))
                         /*|| (this.state.target.includes("@"))*/) 
-                        && this.state.target !== '')
+                        && this.props.network.target.names[0] !== '')
                       .slice(0, 20).map((item, i) => 
                       <Option key={i} value={item[0]}>{item[1]}</Option>
                     )}
                   </Select>
                 </FormItem>
-                <OptionField label='Amount' type='number' onChange={this.setTargetAmount.bind(this)} onApply={this.regenerate.bind(this)} value={this.state.targetAmount.toString()} />
+                <OptionField label='Amount' type='number' onChange={this.setTargetAmount.bind(this)} onApply={this.regenerate.bind(this)} value={this.props.network.target.amount.toString()} />
               </Form>
             </Collapse.Panel>
 
@@ -260,15 +242,15 @@ export default class NetworkView extends Component<Props, State> {
                   <Select
                     placeholder="Select an algorithm"
                     onSelect={key => this.setAlgorithm(key)}
-                    value={NetworkAlgorithms[this.state.selectedAlgorithm].name()}
+                    value={NetworkAlgorithms[this.props.network.algorithm].name()}
                   >
                     {NetworkAlgorithms.map((alg, index) => 
                       <Option key={index}>{alg.name()}</Option>
                     )}
                   </Select>
                 </FormItem>
-                <OptionField label='Limit' type='number' onChange={this.setLimit.bind(this)} onApply={this.regenerate.bind(this)} value={this.state.limit.toString()} />
-                <OptionField label='Depth' type='number' onChange={this.setDepth.bind(this)} onApply={this.regenerate.bind(this)} value={this.state.depth.toString()} />
+                <OptionField label='Limit' type='number' onChange={this.setLimit.bind(this)} onApply={this.regenerate.bind(this)} value={this.props.network.limit.toString()} />
+                <OptionField label='Depth' type='number' onChange={this.setDepth.bind(this)} onApply={this.regenerate.bind(this)} value={this.props.network.depth.toString()} />
               </Form>
             </Collapse.Panel>
 
@@ -283,14 +265,14 @@ export default class NetworkView extends Component<Props, State> {
                   <Select
                     placeholder="Select a layout"
                     onSelect={key => this.setLayout(key)}
-                    value={NetworkLayouts[this.state.selectedLayout].name}
+                    value={NetworkLayouts[this.props.network.selectedLayout].name}
                   >
                     {NetworkLayouts.map((lay, index) => 
                       <Option key={index}>{lay.name}</Option>
                     )}
                   </Select>
                 </FormItem>
-                <Checkbox checked={this.state.physicsEnabled} onChange={() => this.togglePhysics()}>Enable physics</Checkbox>
+                <Checkbox checked={this.props.network.visOptions.physics.enabled} onChange={() => this.togglePhysics()}>Enable physics</Checkbox>
                 <br /><br />
                 <p style={{fontSize: '12px'}}>More options coming soon! :) </p>
               </Form>

@@ -51,29 +51,32 @@ export default class App extends Component<Props, State> {
     this.reset();
   }
 
-  reset() {
-    this.state = {
-      ready: false,
-      firstLaunch: false
-    };
-
-    stores.settings.loadSettings().then(settings => {
+  reset(selectedProfile: ?number = undefined): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.state = {
+        ready: false,
+        firstLaunch: false
+      };
+  
       stores.recipes.recipes = [];
-      if (settings) {
-        stores.recipes.loadRecipes(stores.settings.getCurrentProfile().path).then(() => {
-          stores.nameMaps.loadTooltipMap(stores.settings.getCurrentProfile().path).then(() => {
-            //stores.settings.getCurrentProfile().networks.list.forEach(network => network.generate());
-            if (networkViewInstance) {
-              networkViewInstance.regenerate();
-            }
-            this.setState({ready: true});
+  
+      stores.settings.loadSettings().then(settings => {
+        if (settings) {
+          if (!selectedProfile) {
+            selectedProfile = stores.settings.settings.selectedProfile;
+          }
+
+          stores.recipes.loadRecipes(stores.settings.getProfile(selectedProfile).path).then(() => {
+            stores.nameMaps.loadTooltipMap(stores.settings.getProfile(selectedProfile).path).then(() => {
+              resolve();
+              this.setState({ready: true});
+            });
           });
-        });
-      } else {
-        console.log(this.state.ready)
-        this.setState({firstLaunch: true})
-      }
-    });
+        } else {
+          this.setState({firstLaunch: true})
+        }
+      });
+    })
   }
   
   render() {
