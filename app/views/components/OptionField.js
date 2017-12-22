@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import { Input, Form } from 'antd';
 const FormItem = Form.Item;
+import { formItemLayout } from './OptionSelect';
 
 type Props = {
   onChange: Function,
@@ -11,15 +12,6 @@ type Props = {
   type: string,
   label: string
 }
-
-export const formItemLayout = {
-  labelCol: {
-    sm: { span: 6 },
-  },
-  wrapperCol: {
-    sm: { span: 18 },
-  },
-};
 
 export default class OptionField extends Component<Props> {
   render() {return (

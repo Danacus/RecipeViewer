@@ -1,10 +1,10 @@
 // @flow
 
-import { observable, computed } from "mobx";
 import jetpack from 'fs-jetpack';
 import electron from 'electron';
 import Networks from "./Networks";
 import { stores } from "../App";
+import { observable, computed } from 'mobx';
 const app = electron.remote.app;
 
 export default class Settings {
@@ -54,6 +54,10 @@ export default class Settings {
 
   getCurrentProfile(): Object {
     return this.settings.profiles[this.settings.selectedProfile];
+  }
+
+  getProfile(index: number): Object {
+    return this.settings.profiles[index];
   }
 
   saveSettings() {

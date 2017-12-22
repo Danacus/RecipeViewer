@@ -1,17 +1,17 @@
 // @flow
 
-import React, {PropTypes, Component} from 'react';
-import { observer } from 'mobx-react';
+import React, {Component} from 'react';
 import { Link } from 'react-router-dom';
 import { Layout, Steps, Input, Row, Col, Button, Icon } from 'antd';
 const Step = Steps.Step;
-import { stores, appInstance } from '../App';
+import { appInstance } from '../App';
 import Settings from '../stores/Settings';
 import style from './style/CreateProfilePage.css';
 import jetpack from 'fs-jetpack';
 import electron from 'electron';
 import Networks from '../stores/Networks';
 const app = electron.remote.app;
+import { observer } from 'mobx-react';
 
 type Props = {
   settings: Settings 
