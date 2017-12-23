@@ -55,7 +55,7 @@ export default class Network {
   constructor(target: Stack) {
     this.target = target;
     this.id = uuidv4();
-    this.filter = new Filter([], []);
+    this.filter = new Filter();
     this.limit = 100;
     this.depth = 3;
     this.algorithm = 0;
@@ -81,11 +81,6 @@ export default class Network {
     this.id = data.id;
     if (data.filter) {
       this.filter = this.filter.deserialize(data.filter);
-    }
-    if (data.whitelist && data.blacklist) {
-      // Migration
-      this.filter.whitelist = data.whitelist.map(item => new RegExp(item, "i"));
-      this.filter.blacklist = data.blacklist.map(item => new RegExp(item, "i"));
     }
     this.algorithm = data.algorithm;
     this.limit = data.limit;
@@ -183,12 +178,8 @@ export default class Network {
     return this.target.names[0];
   }
 
-  @computed get getWhitelist(): string[] {
-    return this.filter.whitelist.map(i => i.source)
-  }
-
-  @computed get getBlacklist(): string[] {
-    return this.filter.blacklist.map(i => i.source)
+  @computed get getFilter(): Filter {
+    return this.filter
   }
 
   @computed get listAllAlgortihms(): string[] {

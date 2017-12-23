@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { List, Avatar } from 'antd';
+import { List, Avatar, Icon } from 'antd';
 import Stack from '../../classes/Stack';
 import { stores } from '../../App';
 
@@ -16,7 +16,8 @@ export default class ItemList extends Component<Props> {
     <div>
       <h3>{this.props.label}</h3>
         <List
-          itemLayout="horizontal"
+          size="small"
+          bordered={false}
           dataSource={this.props.items}
           renderItem={item => (
           <List.Item onClick={() => this.props.onClick(item)}>

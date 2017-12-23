@@ -67,7 +67,7 @@ export default class App extends Component<Props, State> {
           }
 
           stores.recipes.loadRecipes(stores.settings.getProfile(selectedProfile).path).then(() => {
-            stores.nameMaps.loadTooltipMap(stores.settings.getProfile(selectedProfile).path).then(() => {
+            stores.nameMaps.loadAll(stores.settings.getProfile(selectedProfile).path).then(() => {
               resolve();
               this.setState({ready: true});
             });

@@ -5,6 +5,7 @@ import jetpack from 'fs-jetpack';
 
 export default class NameMaps {
   @observable titles: {};
+  @observable mods: {};
 
   @computed get list(): {} {
     return this.titles;
@@ -12,6 +13,18 @@ export default class NameMaps {
 
   loadTooltipMap(gamePath: string): Promise<any> {
     let file = gamePath + "/config/jeiexporter/exports/tooltipMap.json";
-    return jetpack.readAsync(file, 'json').then(file => {console.log(file); this.titles = file});
+    return jetpack.readAsync(file, 'json').then(file => this.titles = file);
+  }
+
+  loadModlist(gamePath: string): Promise<any> {
+    let file = gamePath + "/config/jeiexporter/exports/modList.json";
+    return jetpack.readAsync(file, 'json').then(file => this.mods = file);
+  }
+
+  loadAll(gamePath: string): Promise<any> {
+    return Promise.all([
+      this.loadTooltipMap(gamePath),
+      this.loadModlist(gamePath)
+    ])
   }
 }
