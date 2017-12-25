@@ -8,6 +8,7 @@ import Settings from '../stores/Settings';
 import OptionField from './components/OptionField';
 import { observer } from 'mobx-react';
 import { store } from '../App';
+import style from './style/SettingsPage.css'
 
 type Props = {
 

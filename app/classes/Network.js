@@ -11,6 +11,7 @@ import { NetworkAlgorithms } from './NetworkAlgorithm/NetworkAlgorithms';
 import Edge from './Edge';
 import Filter from './Filter';
 import { store } from '../App';
+import Recipe from './Recipe';
 
 export const NetworkLayouts = [
   {
@@ -45,6 +46,7 @@ export default class Network {
   @observable algorithm: number;
   algorithmInstance: INetworkAlgorithm;
   recipes: Recipes;
+  filteredRecipes: Recipes;
   visNetwork: vis.Network;
   @observable limit: number;
   @observable depth: number;
@@ -130,10 +132,9 @@ export default class Network {
     this.isLoading = true;
     this.algorithmInstance = new NetworkAlgorithms[this.algorithm]();
     this.algorithmInstance.target = this.target;
-    this.algorithmInstance.recipes = this.recipes;
+    this.algorithmInstance.recipes = this.filteredRecipes;
     this.algorithmInstance.limit = this.limit;
     this.algorithmInstance.depth = this.depth - 1;
-    this.algorithmInstance.filter = this.filter;
 
     let obj = this.algorithmInstance.generateNetwork(); 
     this.nodes = obj.nodes;
@@ -163,6 +164,12 @@ export default class Network {
     })
 
     this.seed = this.visNetwork.getSeed();
+  }
+
+  @action reloadFilter() {
+    this.filteredRecipes = new Recipes();
+    this.filteredRecipes.recipes = this.recipes.recipes.slice();
+    this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
   }
 
   @action newSeed() {

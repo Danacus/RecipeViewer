@@ -88,17 +88,17 @@ export default class NetworkView extends React.Component<Props, State> {
 
   filterAdd(index: number, item: FilterItem) {
     this.props.network.filter.add(index, item);
-    this.regenerate();
+    this.props.network.reloadFilter();
   }
 
   filterRemove(index: number, item: FilterItem) {
     this.props.network.filter.remove(index, item);
-    this.regenerate();
+    this.props.network.reloadFilter();
   }
 
   toggleInverse(index: number, item: FilterItem) {
     this.props.network.filter.toggleInverse(index, item);
-    this.regenerate();
+    this.props.network.reloadFilter();
     this.setState({});
   }
 
@@ -109,12 +109,10 @@ export default class NetworkView extends React.Component<Props, State> {
 
   setAlgorithm(index: number) {
     this.props.network.setAlgorithm(index);
-    this.regenerate();
   }
 
   setLayout(index: number) {
     this.props.network.setLayout(index);
-    this.regenerate();
   }
 
   togglePhysics() {
@@ -153,12 +151,12 @@ export default class NetworkView extends React.Component<Props, State> {
     this.props.network.setOnDoubleclickCallback((node, edges) => {
       if (node) {
         this.props.addNetwork(node.stack, this.props.network.serialize());
-        this.regenerate();
       }
     });
   }
 
   componentDidMount() {
+    this.props.network.reloadFilter();
     this.regenerate();
   }
 
@@ -190,7 +188,7 @@ export default class NetworkView extends React.Component<Props, State> {
             */}
             <Collapse.Panel header="Target">    
               <Form>
-                <ItemSelect label="Target" placeholder="Search an item" value={this.props.network.target.names[0]} onSearch={this.setTarget.bind(this)} onSelect={value => {this.setTarget(value); this.regenerate()}} onChange={value => {this.setTarget(value); this.regenerate()}} />
+                <ItemSelect label="Target" placeholder="Search an item" value={this.props.network.target.names[0]} onSearch={this.setTarget.bind(this)} onSelect={this.setTarget.bind(this)} onChange={this.setTarget.bind(this)} />
                 <OptionField label='Amount' type='number' onChange={this.props.network.setTargetAmount.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.target.amount.toString()} />
               </Form>
             </Collapse.Panel>

@@ -18,10 +18,9 @@ export default class Profile {
   }
 
   initialize() {
-    return Promise.all([
-      this.recipes.loadRecipes(this.path),
-      this.nameMaps.loadAll(this.path)
-    ]).then(() => {
+    return this.recipes.loadRecipes(this.path).then(() => 
+      this.nameMaps.loadAll(this)
+    ).then(() => {
       this.networks.list.forEach(network => {
         network.recipes = this.recipes;
       })

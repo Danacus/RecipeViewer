@@ -44,6 +44,6 @@ export default class Stack {
   }
 
   getMods(): string[] {
-    return this.names.map(name => name.split(":")[0]);
+    return this.names.filter(name => name != null).map(name => name.split(":")[0]);
   }
 }

@@ -35,7 +35,7 @@ export default class ModSelect extends Component<Props> {
               item[0].includes(input) || (typeof item[1] == 'string' ? item[1] : '').toLowerCase().includes(input)
             ) 
             && this.props.value !== ''
-          ).slice(0, 300).map((item, i) => 
+          ).slice(0, 30).map((item, i) => 
           <Option key={i} value={item[0]}>{item[1]}</Option>
         )}
       </Select>

@@ -2,6 +2,9 @@
 
 import { observable, computed, action } from "mobx";
 import jetpack from 'fs-jetpack';
+import { store } from "../App";
+import Stack from "../classes/Stack";
+import Profile from "../classes/Profile";
 
 export default class NameMaps {
   @observable titles: {};
@@ -11,20 +14,22 @@ export default class NameMaps {
     return this.titles;
   }
 
-  @action loadTooltipMap(gamePath: string): Promise<any> {
-    let file = gamePath + "/config/jeiexporter/exports/tooltipMap.json";
-    return jetpack.readAsync(file, 'json').then(file => this.titles = file);
+  @action loadTooltipMap(profile: Profile): Promise<any> {
+    let file = profile.path + "/config/jeiexporter/exports/tooltipMap.json";
+    return jetpack.readAsync(file, 'json').then(file => 
+      this.titles = file
+    );
   }
 
-  @action loadModlist(gamePath: string): Promise<any> {
-    let file = gamePath + "/config/jeiexporter/exports/modList.json";
+  @action loadModlist(profile: Profile): Promise<any> {
+    let file = profile.path + "/config/jeiexporter/exports/modList.json";
     return jetpack.readAsync(file, 'json').then(file => this.mods = file);
   }
 
-  @action loadAll(gamePath: string): Promise<any> {
+  @action loadAll(profile: Profile): Promise<any> {
     return Promise.all([
-      this.loadTooltipMap(gamePath),
-      this.loadModlist(gamePath)
+      this.loadTooltipMap(profile),
+      this.loadModlist(profile)
     ])
   }
 }
