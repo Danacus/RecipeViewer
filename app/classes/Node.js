@@ -24,6 +24,25 @@ export default class Node {
     this.props = {};
   }
 
+  serialize(): Object {
+    return {
+      stack: this.stack.serialize(),
+      id: this.id,
+      image: this.image,
+      amount: this.amount,
+      group: this.group
+    }
+  }
+
+  deserialize(data: Object) {
+    this.stack = new Stack(['']).deserialize(data.stack);
+    this.id = data.id;
+    this.image = data.image;
+    this.amount = data.amount;
+    this.group = data.group;
+    return this;
+  }
+
   getChildren(): Node[] {
     return this.children;
   }

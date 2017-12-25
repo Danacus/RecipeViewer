@@ -2,12 +2,13 @@ const webpack = require('webpack')
 const path = require('path')
 
 const config = {
-	entry: [
-		path.join(__dirname, '/app/index.js')
-	],
+	entry: {
+		app: path.join(__dirname, '/app/index.js'),
+		worker: path.join(__dirname, '/app/worker/worker.js')
+	},
 	output: {
 		path: path.join(__dirname, '/output'),
-		filename: 'bundle.js'
+		filename: '[name]-bundle.js'
 	},
 	module: {
 		loaders: [

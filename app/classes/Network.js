@@ -12,6 +12,7 @@ import Edge from './Edge';
 import Filter from './Filter';
 import { store } from '../App';
 import Recipe from './Recipe';
+import { ipcRenderer } from 'electron';
 
 export const NetworkLayouts = [
   {
@@ -128,19 +129,31 @@ export default class Network {
     this.visOptions = visOptions;
   }
 
-  generate() {
-    this.isLoading = true;
-    this.algorithmInstance = new NetworkAlgorithms[this.algorithm]();
-    this.algorithmInstance.target = this.target;
-    this.algorithmInstance.recipes = this.filteredRecipes;
-    this.algorithmInstance.limit = this.limit;
-    this.algorithmInstance.depth = this.depth - 1;
+  generate(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.isLoading = true;
 
-    let obj = this.algorithmInstance.generateNetwork(); 
-    this.nodes = obj.nodes;
-    this.edges = obj.edges;
-
-    store.saveSettings();
+      ipcRenderer.send('start', {
+        type: 'algorithm',
+        network: this.id,
+        algorithm: this.algorithm,
+        target: this.target.serialize(),
+        recipes: this.filteredRecipes.serialize(),
+        limit: this.limit,
+        depth: this.depth - 1
+      })
+  
+      ipcRenderer.on('algorithm-response', (event, data) => {
+        if (data.network === this.id) {
+          this.nodes = data.nodes.map(node => new Node(new Stack(['']), -1, -1, -1).deserialize(node));
+          this.edges = data.edges.map(edge => new Edge(new Node(new Stack(['']), -1, -1, -1), new Node(new Stack(['']), -1, -1, -1), new Recipe([], [], [], -1), -1, -1).deserialize(edge));
+          this.visReload();
+          resolve();
+        }
+      })
+  
+      store.saveSettings();
+    }); 
   }
 
   visReload() {

@@ -17,11 +17,21 @@ export default class Recipe {
     this.props = {};
   }
 
-  isWhitelisted(list: RegExp[]): boolean {
-    return (this.inputs.every(input => input.isWhitelisted(list)) && this.catalysts.some(catalyst => catalyst.isWhitelisted(list))) || list.length == 0;
+  serialize(): Object {
+    return {
+      inputs: this.inputs.map(input => input.serialize()),
+      outputs: this.outputs.map(output => output.serialize()),
+      catalysts: this.catalysts.map(catalyst => catalyst.serialize()),
+      id: this.id,
+    }
   }
 
-  isBlacklisted(list: RegExp[]): boolean {
-    return this.inputs.some(input => input.isBlacklisted(list)) || this.catalysts.some(catalyst => catalyst.isBlacklisted(list));
+  deserialize(data: Object) {
+    this.inputs = data.inputs.map(input => new Stack(['']).deserialize(input));
+    this.outputs = data.outputs.map(output => new Stack(['']).deserialize(output));
+    this.catalysts = data.catalysts.map(catalyst => new Stack(['']).deserialize(catalyst));
+    this.id = data.id;
+    this.props = {};
+    return this;
   }
 }

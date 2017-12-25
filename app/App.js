@@ -19,6 +19,7 @@ import { withRouter } from "react-router";
 import NameMaps from "./stores/NameMaps";
 import { networkViewInstance } from "./views/NetworkView";
 import { Spin } from 'antd';
+import { ipcRenderer } from "electron";
 
 export const store = new Settings();
 

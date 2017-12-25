@@ -124,34 +124,33 @@ export default class NetworkView extends React.Component<Props, State> {
       return;
     }
 
-    this.props.network.generate();
-    this.props.network.visReload();
+    this.props.network.generate().then(() => {
+      this.props.network.setOnclickCallback((node, edges) =>  {
+        if (node) {
+          this.setState({selectedNode: node})
+        } else {
+          this.setState({selectedNode: null})
+        }
+        
+        if (edges) {
+          let recipes = edges.map(edge => edge.recipe).reduce((total, current) => {
+            if (!total.some(recipe => recipe.id == current.id)) {
+              total.push(current);
+            }
     
-    this.props.network.setOnclickCallback((node, edges) =>  {
-      if (node) {
-        this.setState({selectedNode: node})
-      } else {
-        this.setState({selectedNode: null})
-      }
-      
-      if (edges) {
-        let recipes = edges.map(edge => edge.recipe).reduce((total, current) => {
-          if (!total.some(recipe => recipe.id == current.id)) {
-            total.push(current);
-          }
+            return total;
+          }, [])
+          this.setState({selectedRecipes: recipes})
+        } else {
+          this.setState({selectedRecipes: []})
+        }    
+       });
   
-          return total;
-        }, [])
-        this.setState({selectedRecipes: recipes})
-      } else {
-        this.setState({selectedRecipes: []})
-      }    
-     });
-
-    this.props.network.setOnDoubleclickCallback((node, edges) => {
-      if (node) {
-        this.props.addNetwork(node.stack, this.props.network.serialize());
-      }
+      this.props.network.setOnDoubleclickCallback((node, edges) => {
+        if (node) {
+          this.props.addNetwork(node.stack, this.props.network.serialize());
+        }
+      });
     });
   }
 

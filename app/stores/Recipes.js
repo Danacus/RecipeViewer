@@ -4,12 +4,25 @@ import { observable, computed } from "mobx";
 import Recipe from "../classes/Recipe";
 import Stack from "../classes/Stack";
 import jetpack from 'fs-jetpack';
+import { ipcRenderer } from "electron";
+import os from 'os';
 
 export default class Recipes {
   @observable recipes: Recipe[] = [];
 
   @computed get list(): Recipe[] {
     return this.recipes;
+  }
+
+  serialize(): Object {
+    return {
+      recipes: this.recipes.map(recipe => recipe.serialize())
+    }
+  }
+
+  deserialize(data: Object) {
+    this.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
+    return this;
   }
 
   getRecipesWithOutput(output: Stack): Recipe[] {
@@ -33,11 +46,33 @@ export default class Recipes {
       this.recipes = [];
       let recipePath = gamePath + "/config/jeiexporter/exports/recipes/";
 
-      jetpack.findAsync(recipePath, {matching: "*.json"}).then(files =>
-        Promise.all(files.map(file =>
-          this.readRecipeFile(file)
-        )).then(() => resolve())
-      )
+      jetpack.findAsync(recipePath, {matching: "*.json"}).then(files => {
+        let chunks = [];
+        for (var i = 0, j = 0; i < os.cpus().length; i++, j += files.length / os.cpus().length) {
+          if (i == os.cpus().length - 1) {
+            chunks[i] = files.slice(j, files.length);
+          } else {
+            chunks[i] = files.slice(j, j + files.length / os.cpus().length);
+          } 
+        }
+
+        let counter = chunks.length;
+        chunks.forEach(chunk => ipcRenderer.send('start', {path: chunk, type: 'recipeloader'}));
+
+        ipcRenderer.on('recipeloader-response', (event, data) => {   
+          data.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
+          console.log("Added recipe file")
+
+          this.recipes = this.recipes.concat(data.recipes);
+          counter--;
+
+          if (counter == 0) {
+            console.log("Done")
+            ipcRenderer.removeAllListeners('recipeloader-response');
+            resolve();
+          }
+        })
+      })
     })
   }
 
@@ -46,8 +81,9 @@ export default class Recipes {
   }
 
   loadRecipeFile(file: {recipes: [], catalysts: []}) {
+    let recipes: Recipe[] = [];
     file.recipes.forEach((recipe, i) => {
-      this.recipes.push(new Recipe(
+      recipes.push(new Recipe(
         recipe.input.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
         recipe.output.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
         file.catalysts.map(catalyst => new Stack([catalyst])),
@@ -55,10 +91,7 @@ export default class Recipes {
       ))
     })
 
-    this.recipes.forEach(recipe => {
-      recipe.inputs = reduceStacks(recipe.inputs);
-      recipe.outputs = reduceStacks(recipe.outputs);
-    })
+    return recipes;
   }
 }
 

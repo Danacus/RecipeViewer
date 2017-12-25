@@ -11,7 +11,6 @@ export interface INetworkAlgorithm {
   recipes: Recipes;
   limit: number;
   depth: number;
-  filter: Filter;
   counter: number;
   
   static name(): string;
