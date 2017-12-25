@@ -12,6 +12,7 @@ export default class Settings {
   @observable profiles: Profile[];
   @observable selectedProfile: number;
   @observable isLoading: boolean = false;
+  @observable tasks: string[] = [];
 
   @action loadSettings(): Promise<any> {
     this.isLoading = true;
@@ -25,7 +26,7 @@ export default class Settings {
       } else {
         this.readFile(file).then(settings => resolve());
       }
-    })
+    });
   }
 
   readFile(path: string): Promise<any> {
@@ -38,8 +39,8 @@ export default class Settings {
           this.isLoading = false;
           resolve();
         });
-      })
-    })
+      });
+    });
   }
 
   @action setProfiles(profiles: Profile[]) {
@@ -52,6 +53,7 @@ export default class Settings {
 
   @action selectProfile(index: number) {
     this.isLoading = true;
+    this.tasks = this.tasks.filter(t => t != 'vis.js: loading network');
     return this.getProfile(index).initialize().then(() => {
       this.isLoading = false;
       this.selectedProfile = index; 
@@ -67,7 +69,7 @@ export default class Settings {
     return this.profiles[index];
   }
 
-  @action saveSettings() {
+  saveSettings() {
     let file = app.getPath('userData') + "/settings.json";
     return jetpack.writeAsync(file, {profiles: this.profiles.map(profile => ({name: profile.name, path: profile.path, networks: profile.networks.serialize()})), selectedProfile: this.selectedProfile});
   }

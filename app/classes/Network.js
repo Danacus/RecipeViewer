@@ -132,6 +132,8 @@ export default class Network {
   generate(): Promise<any> {
     return new Promise((resolve, reject) => {
       this.isLoading = true;
+      let task = 'Generating network: ' + store.getCurrentProfile().nameMaps.titles[this.target.names[0]];
+      store.tasks.push(task);
 
       ipcRenderer.send('start', {
         type: 'algorithm',
@@ -147,6 +149,8 @@ export default class Network {
         if (data.network === this.id) {
           this.nodes = data.nodes.map(node => new Node(new Stack(['']), -1, -1, -1).deserialize(node));
           this.edges = data.edges.map(edge => new Edge(new Node(new Stack(['']), -1, -1, -1), new Node(new Stack(['']), -1, -1, -1), new Recipe([], [], [], -1), -1, -1).deserialize(edge));
+          store.tasks = store.tasks.filter(t => t != task);
+          store.tasks.push('vis.js: loading network');
           this.visReload();
           resolve();
         }
@@ -174,6 +178,7 @@ export default class Network {
     this.visNetwork = new vis.Network(container, {nodes: this.visNodes, edges: this.visEdges}, this.visOptions);
     this.visNetwork.on("afterDrawing", () => {
       this.isLoading = false;
+      store.tasks = store.tasks.filter(t => t != 'vis.js: loading network');
     })
 
     this.seed = this.visNetwork.getSeed();

@@ -1,6 +1,7 @@
 import Recipes from "../stores/Recipes";
 import Networks from "../stores/Networks";
 import NameMaps from "../stores/NameMaps";
+import { action } from "mobx";
 
 export default class Profile {
   name: string;
@@ -17,7 +18,7 @@ export default class Profile {
     this.nameMaps = new NameMaps();
   }
 
-  initialize() {
+  @action initialize() {
     return this.recipes.loadRecipes(this.path).then(() => 
       this.nameMaps.loadAll(this)
     ).then(() => {

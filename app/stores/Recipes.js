@@ -6,6 +6,7 @@ import Stack from "../classes/Stack";
 import jetpack from 'fs-jetpack';
 import { ipcRenderer } from "electron";
 import os from 'os';
+import { store } from "../App";
 
 export default class Recipes {
   @observable recipes: Recipe[] = [];
@@ -57,14 +58,18 @@ export default class Recipes {
         }
 
         let counter = chunks.length;
-        chunks.forEach(chunk => ipcRenderer.send('start', {path: chunk, type: 'recipeloader'}));
+        chunks.forEach((chunk, i) => {
+          store.tasks.push(`Worker #${i}: Loading recipes...`);
+          ipcRenderer.send('start', {path: chunk, type: 'recipeloader'});
+        });
 
-        ipcRenderer.on('recipeloader-response', (event, data) => {   
+        ipcRenderer.on('recipeloader-response', (event, data) => {  
+          counter--; 
           data.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
           console.log("Added recipe file")
+          store.tasks = store.tasks.filter(task => task != `Worker #${counter}: Loading recipes...`);
 
-          this.recipes = this.recipes.concat(data.recipes);
-          counter--;
+          this.recipes = this.recipes.concat(data.recipes);   
 
           if (counter == 0) {
             console.log("Done")
