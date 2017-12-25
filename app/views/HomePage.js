@@ -11,14 +11,13 @@ import NetworkView from './NetworkView';
 import Networks from '../stores/Networks';
 import Network from '../classes/Network';
 import Stack from '../classes/Stack';
-import { stores, appInstance } from '../App';
+import { store, appInstance } from '../App';
 import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
 import Settings from '../stores/Settings';
 import style from './style/HomePage.css';
 import uuidv4 from 'uuid/v4';
 
 type Props = {
-  settings: Settings  
 }
 
 type State = {
@@ -35,12 +34,10 @@ class HomePage extends Component<Props, State> {
     this.state = {
       addProfile: false,
     };
-
-    console.log(this.props.settings.list)
   }
 
   toggle() {
-    let networks = this.props.settings.getCurrentProfile().networks
+    let networks = store.getCurrentProfile().networks
     networks.list.find(network => network.id == networks.selectedNetwork).collapsed = !networks.list.find(network => network.id == networks.selectedNetwork).collapsed;
   }
 
@@ -49,7 +46,7 @@ class HomePage extends Component<Props, State> {
   }
 
   onChange = (activeKey: string) => {
-    this.props.settings.getCurrentProfile().networks.selectedNetwork = activeKey;
+    store.getCurrentProfile().networks.selectedNetwork = activeKey;
   }
 
   onEdit = (targetKey: string, action: any) => {
@@ -59,66 +56,35 @@ class HomePage extends Component<Props, State> {
   changeProfile(profile: string) {
     if (profile == "add") {
       this.setState({addProfile: true});
-      //this.setState({addProfile: false});
     } else {
       if (appInstance) {
-        stores.settings.saveSettings().then(() => {
-          appInstance.reset(parseInt(profile)).then(() => {
-            this.props.settings.selectProfile(parseInt(profile));
-            this.setState({});
-          });   
+        store.saveSettings().then(() => {
+          store.selectProfile(parseInt(profile));
+          this.setState({}); 
         });
       }
     }
   }
 
   add = (stack: Stack = new Stack(['']), networkData: ?Object = null) => {
-    let network = this.props.settings.getCurrentProfile().networks.addNetwork(new Network(new Stack([''])));
-
+    let network = store.getCurrentProfile().networks.addNetwork(new Network());
+    
     if (!networkData) {
-      network.setRecipes(stores.recipes);
-      network.setAlgorithm(0);
-      //network.setAlgorithm(NetworkAlgorithms[0]);
-      network.setVisOptions({
-        nodes: {
-          shape: 'image'
-        },
-        edges: {
-          width: 7,
-          arrows: {
-            middle: {enabled: true, scaleFactor: -1}
-          },
-          color: {inherit: 'to'}
-        },
-        physics: {
-          enabled: true,
-          barnesHut: {
-            springLength: 250,
-            springConstant: 0.003,
-            damping: 0.1
-          }
-        },
-        layout: {
-          hierarchical: {
-            enabled: false,
-          }
-        }
-      });
-      network.setLayout(0);
+      network.createNew();
     } else {
       networkData.id = uuidv4();
       network.deserialize(networkData);
-      network.setRecipes(stores.recipes);
       network.setTarget(stack.names[0]);
     }
 
-    this.props.settings.getCurrentProfile().networks.selectedNetwork = network.id;
+    network.setRecipes(store.getCurrentProfile().recipes);
+    store.getCurrentProfile().networks.selectedNetwork = network.id;
     
     this.setState({});
   }
   
   remove = (targetKey: number) => {
-    let networks = this.props.settings.getCurrentProfile().networks;
+    let networks = store.getCurrentProfile().networks;
     if (networks.selectedNetwork == targetKey) {
       networks.selectedNetwork = networks.list[0].id;
     }
@@ -135,13 +101,13 @@ class HomePage extends Component<Props, State> {
             <Tabs 
               type="editable-card"
               onChange={this.onChange}
-              activeKey={this.props.settings.getCurrentProfile().networks.selectedNetwork}
+              activeKey={store.getCurrentProfile().networks.selectedNetwork}
               onEdit={this.onEdit}
               className='tabs'
             >
-              {this.props.settings.getCurrentProfile().networks.list.map((network, index) => 
+              {store.getCurrentProfile().networks.list.map((network, index) => 
                 <TabPane 
-                  tab={stores.nameMaps.list[network.getTarget] ? stores.nameMaps.list[network.getTarget] : network.getTarget} 
+                  tab={store.getCurrentProfile().nameMaps.list[network.getTarget] ? store.getCurrentProfile().nameMaps.list[network.getTarget] : network.getTarget} 
                   key={network.id}
                 >
                   <NetworkView addNetwork={this.add.bind(this)} network={network} updateParent={() => this.update()} />
@@ -150,8 +116,8 @@ class HomePage extends Component<Props, State> {
             </Tabs>
           </Col>
           <Col span={4} className="header-row">
-            <Select className='select-profile' value={this.props.settings.getCurrentProfile().name} onChange={value => this.changeProfile(value)}>
-              {this.props.settings.list.profiles.map((profile, i) => 
+            <Select className='select-profile' value={store.getCurrentProfile().name} onChange={value => this.changeProfile(value)}>
+              {store.profiles.map((profile, i) => 
                 <Option key={i} value={i}>{profile.name}</Option>
               )}
               <Option key='add' value='add'>New profile ...</Option>

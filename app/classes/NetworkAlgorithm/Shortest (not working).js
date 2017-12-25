@@ -35,7 +35,6 @@ export default class Shortest implements INetworkAlgorithm {
     this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
     this.counter = 0;
     this.createNode(targetNode, 0);
-    console.log(this.nodes.length);
     this.eliminateResources();
     return {nodes: this.nodes, edges: this.edges};
   }

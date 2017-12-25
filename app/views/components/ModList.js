@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import { List, Avatar, Icon } from 'antd';
 import Stack from '../../classes/Stack';
-import { stores } from '../../App';
+import { store } from '../../App';
 
 type Props = {
   mods: Array<string>,
@@ -23,7 +23,7 @@ export default class ModList extends Component<Props> {
           renderItem={mod => (
           <List.Item onClick={() => this.props.onClick(mod)} actions={this.props.onRemove ? [<Icon type="close" onClick={() => this.props.onRemove(mod)} />]: []}>
             <List.Item.Meta
-              title={stores.nameMaps.mods[mod]}
+              title={store.getCurrentProfile().nameMaps.mods[mod]}
               description={mod}
               />
             </List.Item>

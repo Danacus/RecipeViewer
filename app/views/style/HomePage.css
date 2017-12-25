@@ -19,6 +19,7 @@ Tweaking margins until it looks right!
 
 .tabs>.ant-tabs-bar {
   margin-top: 10px;
+  margin-bottom: 0px !important;
 }
 
 .ant-tabs-extra-content {

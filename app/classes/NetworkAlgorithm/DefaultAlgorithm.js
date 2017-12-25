@@ -31,7 +31,8 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
   generateNetwork(): any {
     let targetNode: Node = new Node(this.target, 0, this.target.amount);
     // When you realize you should be using Immutable instead
-    this.filteredRecipes = new Recipes(this.recipes.list.slice());
+    this.filteredRecipes = new Recipes();
+    this.filteredRecipes.recipes = this.recipes.list.slice();
     this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
     this.counter = 0;
     this.createNode(targetNode, 0);

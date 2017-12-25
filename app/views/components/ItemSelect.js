@@ -5,7 +5,7 @@ import { Select, Form } from 'antd';
 const Option = Select.Option;
 const FormItem = Form.Item;
 import { formItemLayout } from './OptionSelect';
-import { stores } from '../../App';
+import { store } from '../../App';
 
 type Props = {
   onSelect: Function,
@@ -29,7 +29,7 @@ export default class ItemSelect extends Component<Props> {
         onChange={value => this.props.onChange(value)}
         onSelect={value => this.props.onSelect(value)}
       >
-        {Object.entries(stores.nameMaps.list)
+        {Object.entries(store.getCurrentProfile().nameMaps.titles)
           .filter(item => 
             this.props.value.toLowerCase().replace('@', '').split(' ').every(input => 
               item[0].includes(input) || (typeof item[1] == 'string' ? item[1] : '').toLowerCase().includes(input)

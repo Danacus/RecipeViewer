@@ -29,7 +29,6 @@ export default class OptionSelect extends Component<Props> {
         placeholder={this.props.placeholder}
         onSelect={key => this.props.onSelect(key)}
         value={this.props.items[this.props.current]}
-        {...this.props.selectProps}
       >
         {this.props.items.map((item, index) => 
           <Option key={index}>{item}</Option>

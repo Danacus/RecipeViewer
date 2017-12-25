@@ -1,9 +1,8 @@
 // @flow
 
 import React, { Component } from 'react';
-import { List, Avatar, Icon, Checkbox } from 'antd';
+import { List, Avatar, Icon, Switch } from 'antd';
 import Stack from '../../classes/Stack';
-import { stores } from '../../App';
 import FilterItem from '../../classes/FilterItem';
 
 type Props = {
@@ -21,10 +20,14 @@ export default class FilterList extends Component<Props> {
           bordered={false}
           dataSource={this.props.items}
           renderItem={item => (
-          <List.Item actions={[<Checkbox onChange={e => this.props.onChange(item)} checked={!item.inverse}></Checkbox>, <Icon type="close" onClick={() => this.props.onRemove(item)} />]}>
+          <List.Item actions={[
+            <Switch onChange={e => this.props.onChange(item)} checked={!item.inverse} checkedChildren={<Icon type="check" />} unCheckedChildren={<Icon type="cross" />} />, 
+            <Icon type="close" onClick={() => this.props.onRemove(item)} />
+          ]}>
             <List.Item.Meta
               title={this.props.nameMap[item.value]}
               description={item.value}
+              className='filter-meta'
               />
             </List.Item>
           )}

@@ -18,13 +18,12 @@ import DefaultAlgorithm from './classes/NetworkAlgorithm/DefaultAlgorithm';
 import { withRouter } from "react-router";
 import NameMaps from "./stores/NameMaps";
 import { networkViewInstance } from "./views/NetworkView";
+import { Spin } from 'antd';
+/*import cluster from 'cluster';
+import http from 'http';
+const numCPUs = require('os').cpus().length;*/
 
-export const stores = {
-  //networks: new Networks(),
-  recipes: new Recipes([]),
-  settings: new Settings(),
-  nameMaps: new NameMaps()
-}
+export const store = new Settings();
 
 let appInstance;
 
@@ -37,8 +36,7 @@ type Props = {
 }
 
 type State = {
-  ready: boolean,
-  firstLaunch: boolean
+  ready: boolean
 }
 
 export default class App extends Component<Props, State> {
@@ -48,64 +46,68 @@ export default class App extends Component<Props, State> {
 
     appInstance = this;
 
-    this.reset();
-  }
+    this.state = {
+      ready: false
+    };
 
-  reset(selectedProfile: ?number = undefined): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.state = {
-        ready: false,
-        firstLaunch: false
-      };
-  
-      stores.recipes.recipes = [];
-  
-      stores.settings.loadSettings().then(settings => {
-        if (settings) {
-          if (!selectedProfile) {
-            selectedProfile = stores.settings.settings.selectedProfile;
-          }
-
-          stores.recipes.loadRecipes(stores.settings.getProfile(selectedProfile).path).then(() => {
-            stores.nameMaps.loadAll(stores.settings.getProfile(selectedProfile).path).then(() => {
-              resolve();
-              this.setState({ready: true});
-            });
-          });
-        } else {
-          this.setState({firstLaunch: true})
-        }
+    /*if (cluster.isMaster) {
+      console.log(`Master ${process.pid} is running`);
+    
+      // Fork workers.
+      for (let i = 0; i < numCPUs; i++) {
+        cluster.fork();
+      }
+    
+      cluster.on('exit', (worker, code, signal) => {
+        console.log(`worker ${worker.process.pid} died`);
       });
+    } else {
+      // Workers can share any TCP connection
+      // In this case it is an HTTP server
+      http.createServer((req, res) => {
+        res.writeHead(200);
+        res.end('hello world\n');
+      }).listen(8000);
+    
+      console.log(`Worker ${process.pid} started`);
+    }*/
+
+    store.loadSettings().then(() => {
+      this.setState({ready: true});
     })
   }
   
   render() {
     return (
-      <Provider {...stores}>
+      <Provider store>
         <HashRouter>
           <div>
             <Route exact path="/homepage"
               render={(routeProps) => (
-                <HomePage {...routeProps} settings={stores.settings} />
+                <HomePage {...routeProps} />
               )}
             />
             <Route exact path="/firstlaunch"
               render={(routeProps) => (
-                <CreateProfilePage settings={stores.settings} />
+                <CreateProfilePage />
               )}
             />
             <Route exact path="/settings"
               render={(routeProps) => (
-                <SettingsPage settings={stores.settings} />
+                <SettingsPage />
               )}
             />
             <Route exact path="/"
               render={(routeProps) => (
                 <div>
-                {this.state.ready ? 
-                  <Redirect to="/homepage" push={true} /> : 
-                  this.state.firstLaunch ? 
-                    <Redirect to="/firstlaunch" push={true} /> : <div />
+                {this.state.ready ?   
+                  store.profiles.length < 0 ? 
+                    <Redirect to="/firstlaunch" push={true} /> : 
+                    <Redirect to="/homepage" push={true} /> :
+                  <div className='loading-div'>
+                    <div className='blur' />
+                    <Spin className='spin' size='large' />
+                  </div> 
                 }
                 </div>
               )}

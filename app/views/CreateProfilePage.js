@@ -2,7 +2,7 @@
 
 import React, {Component} from 'react';
 import { Link } from 'react-router-dom';
-import { Layout, Steps, Input, Row, Col, Button, Icon } from 'antd';
+import { Layout, Steps, Input, Row, Col, Button, Icon, Spin } from 'antd';
 const Step = Steps.Step;
 import { appInstance } from '../App';
 import Settings from '../stores/Settings';
@@ -12,9 +12,11 @@ import electron from 'electron';
 import Networks from '../stores/Networks';
 const app = electron.remote.app;
 import { observer } from 'mobx-react';
+import { store } from '../App';
+import Profile from '../classes/Profile';
 
 type Props = {
-  settings: Settings 
+
 }
 
 type State = {
@@ -24,7 +26,7 @@ type State = {
   inputValue: string,
   exporterInstalled: boolean,
   nameInputValue: string,
-  profileIndex: ?number
+  profileIndex: number
 }
 
 @observer
@@ -40,22 +42,21 @@ class CreateProfilePage extends Component<Props, State> {
       inputValue: '',
       exporterInstalled: false,
       nameInputValue: '',
-      profileIndex: null
+      profileIndex: store.profiles.length
     };
   }
 
   cancel() {
-    this.props.settings.changeSettings(settings => settings.profiles = settings.profiles.filter((profile, i) => i != this.state.profileIndex));
+    store.setProfiles(store.profiles.filter((profile, i) => i != this.state.profileIndex));
   }
 
   onChangeName(path: string) {
-    this.setState({nameInputValue: path, profileIndex: this.props.settings.list.profiles.length});
+    this.setState({nameInputValue: path, profileIndex: store.profiles.length});
   }
 
   onChangePath(path: string) {
     this.setState({inputValue: path});
     jetpack.existsAsync(path + '/mods').then(result => {
-      console.log(result);
       if (result == 'dir') {
         this.setState({path});
       } else {
@@ -74,7 +75,7 @@ class CreateProfilePage extends Component<Props, State> {
   setCurrentStep(currentStep: number) {
     this.setState({currentStep});
     if (currentStep == 1) {
-      this.props.settings.changeSettings(settings => settings.profiles.push({name: this.state.nameInputValue, networks: new Networks()}));
+      store.addProfile(new Profile(this.state.nameInputValue, '', new Networks()))
     }
 
     if (currentStep == 2) { 
@@ -85,12 +86,11 @@ class CreateProfilePage extends Component<Props, State> {
   checkExporter() {
     jetpack.existsAsync(this.state.path + '/config/jeiexporter/exports').then(result => {
       if (result == 'dir') {
-        this.setState({exporterInstalled: true});
-        this.setCurrentStep(3);
-        this.props.settings.changeSettings(settings => settings.profiles[this.state.profileIndex].path = this.state.path);
-        if (appInstance) {
-          appInstance.reset();
-        }
+        this.setState({exporterInstalled: true});   
+        store.getProfile(this.state.profileIndex).path = this.state.path;
+        store.saveSettings().then(store.loadSettings.bind(store)).then(() => {
+          this.setCurrentStep(3);
+        })
       } else {
         this.setState({exporterInstalled: false});
       }
@@ -128,7 +128,7 @@ class CreateProfilePage extends Component<Props, State> {
           content: () => {
             return <div>
               <p style={{width: "100%"}}>Please download and run the JEIExporter mod to continue</p>
-              <Button style={{margin: 'auto'}} onClick={() => this.checkExporter()}>Refresh</Button>
+              {store.isLoading ? <Spin /> : <Button style={{margin: 'auto'}} onClick={() => this.checkExporter()}>Refresh</Button>}
             </div>
           }
         },

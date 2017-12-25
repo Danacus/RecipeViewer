@@ -60,19 +60,37 @@ export default class Filter {
 
   @action toggleInverse(list: number, item: FilterItem) {
     this.lists[list].filter(i => i.value == item.value).forEach(i => {
-      console.log('toggle')
       i.inverse = !i.inverse;
     });
   }
 
   recipeFilter(recipe: Recipe): boolean {
-    return (recipe.catalysts.some(catalyst => this.lists[1].some(listed => listed.matchesStack(catalyst))) || this.lists[1].length == 0)
-      && recipe.inputs.every(input => this.stackFilter(input))
-      && recipe.outputs.every(output => this.stackFilter(output));
+    return recipe.catalysts.some(cat => this.itemMatch(1, cat) && this.modMatch(cat))
+    // And every input matches the filter
+    && recipe.inputs.every(input => this.stackFilter(input))
+    // Same for outputs
+    && recipe.outputs.every(output => this.stackFilter(output));
   }
 
   stackFilter(stack: Stack): boolean {
-    return (this.lists[2].some(listed => stack.getMods().some(mod => listed.matches(mod))) || this.lists[2].length == 0)
-      && (this.lists[0].some(listed => listed.matchesStack(stack)) || this.lists[0].length == 0);
+    return this.itemMatch(0, stack) && this.modMatch(stack);
+  }
+
+  itemMatch(index: number, stack: Stack): boolean {
+    return ((
+      // The stack is explicitly whitelisted or the whitelist is empty
+      (stack.names.some(name => this.lists[index].filter(i => !i.inverse).some(listed => listed.value == name)) || this.lists[index].filter(i => !i.inverse).length == 0)
+      // And no name of the stack is blacklisted
+      && !stack.names.some(name => this.lists[index].filter(i => i.inverse).some(listed => listed.value == name))
+    ) || this.lists[index].length == 0);
+  }
+
+  modMatch(stack: Stack): boolean {
+    return ((
+      // And one of the mods of the stack is whitelisted or the whitelist is empty
+      (stack.getMods().some(mod => this.lists[2].filter(i => !i.inverse).some(listed => listed.value == mod)) || this.lists[2].filter(i => !i.inverse).length == 0)
+      // And not every mod is blacklisted
+      && (!stack.getMods().every(mod => this.lists[2].filter(i => i.inverse).some(listed => listed.value == mod)) || this.lists[2].filter(i => i.inverse).length == 0)
+    ) || this.lists[2].length == 0 || stack.getMods().length == 0);
   }
 }

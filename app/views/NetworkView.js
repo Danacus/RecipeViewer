@@ -1,11 +1,11 @@
 // @flow
 
 import React from 'react';
-import { Layout, Menu, Collapse, Input, Button, Select, Card, Avatar, Form, Tabs, Checkbox } from 'antd';
+import { Layout, Menu, Collapse, Input, Button, Select, Card, Avatar, Form, Tabs, Checkbox, Spin } from 'antd';
 import Network, { NetworkLayouts } from '../classes/Network';
 import Node from '../classes/Node';
 import Stack from '../classes/Stack';
-import { stores } from '../App';
+import { store } from '../App';
 import Recipe from '../classes/Recipe';
 import OptionField from './components/OptionField';
 import OptionSelect, { formItemLayout } from './components/OptionSelect';
@@ -97,7 +97,9 @@ export default class NetworkView extends React.Component<Props, State> {
   }
 
   toggleInverse(index: number, item: FilterItem) {
-    this.props.network.filter.toggleInverse(0, item);
+    this.props.network.filter.toggleInverse(index, item);
+    this.regenerate();
+    this.setState({});
   }
 
   setTarget(target: string) {
@@ -150,9 +152,6 @@ export default class NetworkView extends React.Component<Props, State> {
 
     this.props.network.setOnDoubleclickCallback((node, edges) => {
       if (node) {
-        /*node.stack.names.forEach(name => {
-          this.props.network.addBlacklistItem(new RegExp(name, "i"));
-        })*/
         this.props.addNetwork(node.stack, this.props.network.serialize());
         this.regenerate();
       }
@@ -165,9 +164,15 @@ export default class NetworkView extends React.Component<Props, State> {
 
   render() {
     return (
-      <Layout>
-        <Content style={{height:"93vh", background: '#fff'}} id={this.props.network.id}>
-
+      <Layout className='nv-layout'>
+        {this.props.network.isLoading || store.isLoading ? 
+          <div className='loading-div'>
+            <div className='blur' />
+            <Spin className='spin' size='large' />
+          </div> 
+        : <p></p>}
+        <Content style={{height:"calc(100vh - 50px)", background: '#fff'}} id={this.props.network.id}>
+          
         </Content>
         <Sider
           collapsible
@@ -175,7 +180,7 @@ export default class NetworkView extends React.Component<Props, State> {
           collapsedWidth={0}
           collapsed={this.props.network.collapsed}
           width={window.innerWidth / 4}
-          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0" }}
+          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0", zIndex: "30" }}
         >
           <Collapse bordered={false} style={collapseStyle}>
             {/* 
@@ -227,8 +232,8 @@ export default class NetworkView extends React.Component<Props, State> {
                 <Collapse.Panel header="Items">    
                   <Form>
                     <FilterList 
-                      nameMap={stores.nameMaps.titles} 
-                      onChange={item => this.props.network.filter.toggleInverse(0, item)} 
+                      nameMap={store.getCurrentProfile().nameMaps.titles} 
+                      onChange={item => this.toggleInverse(0, item)} 
                       onRemove={item => this.filterRemove(0, item)} 
                       items={this.props.network.filter.lists[0]} 
                     />
@@ -247,8 +252,8 @@ export default class NetworkView extends React.Component<Props, State> {
                 <Collapse.Panel header="Catalysts">    
                   <Form>
                     <FilterList 
-                      nameMap={stores.nameMaps.titles} 
-                      onChange={item => this.props.network.filter.toggleInverse(1, item)} 
+                      nameMap={store.getCurrentProfile().nameMaps.titles} 
+                      onChange={item => this.toggleInverse(1, item)} 
                       onRemove={item => this.filterRemove(1, item)} 
                       items={this.props.network.filter.lists[1]} 
                     />
@@ -266,7 +271,12 @@ export default class NetworkView extends React.Component<Props, State> {
               <Collapse bordered={false} style={collapseStyle}>
                 <Collapse.Panel header="Mods">    
                   <Form>
-                    <FilterList nameMap={stores.nameMaps.mods} onRemove={item => this.filterRemove(2, item)} items={this.props.network.filter.lists[2]} />
+                    <FilterList 
+                      nameMap={store.getCurrentProfile().nameMaps.mods} 
+                      onChange={item => this.toggleInverse(2, item)} 
+                      onRemove={item => this.filterRemove(2, item)} 
+                      items={this.props.network.filter.lists[2]} 
+                    />
                     <ModSelect 
                       label="Add" 
                       placeholder="Search a mod" 
@@ -313,7 +323,7 @@ export default class NetworkView extends React.Component<Props, State> {
                 > 
                   {this.state.selectedRecipes.map((recipe, i) =>    
                     <TabPane tab={<Avatar src={
-                      `file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${recipe.outputs[0].names[0].replace(/:/g, "_")}.png`
+                      `file://${store.getCurrentProfile().path}/config/jeiexporter/items/${recipe.outputs[0].names[0].replace(/:/g, "_")}.png`
                     } />} key={i}>
                       <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="Catalysts" items={recipe.catalysts} />
                       <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="Inputs" items={recipe.inputs.filter(item => item.names.length > 0 && item.amount > 0)} />

@@ -12,12 +12,16 @@ export default class FilterItem {
     this.inverse = inverse;
   }
 
-  matches(item: string): boolean {
+  test(item: string): boolean {
     return this.inverse ? this.value != item : this.value == item;
   }
 
-  matchesStack(item: Stack): boolean {
-    return item.names.some(name => this.matches(name)) || item.names.length == 0;
+  testStack(item: Stack): boolean {
+    return (item.names.some(name => this.test(name)) && !item.names.every(name => !this.test(name))) || item.names.length == 0;
+  }
+
+  testStacks(items: Stack[]): boolean {
+    return (items.every(stack => this.testStack(stack)) && !items.every(stack => !this.testStack(stack)));
   }
 
   serialize(): Object {

@@ -8,10 +8,6 @@ import jetpack from 'fs-jetpack';
 export default class Recipes {
   @observable recipes: Recipe[] = [];
 
-  constructor(recipes: Recipe[]) {
-    this.recipes = recipes;
-  }
-
   @computed get list(): Recipe[] {
     return this.recipes;
   }
