@@ -7,9 +7,11 @@ const Step = Steps.Step;
 import Settings from '../stores/Settings';
 import OptionField from './components/OptionField';
 import { observer } from 'mobx-react';
+import { store } from '../App';
+import style from './style/SettingsPage.css'
 
 type Props = {
-  settings: Settings 
+
 }
 
 type State = {
@@ -23,29 +25,29 @@ class SettingsPage extends React.Component<Props, State> {
     super(props);
 
     this.state = {
-      name: this.props.settings.getCurrentProfile().name,
-      path: this.props.settings.getCurrentProfile().path
+      name: store.getCurrentProfile().name,
+      path: store.getCurrentProfile().path
     };
   }
 
   setName(name: string) {
-    this.props.settings.getCurrentProfile().name = name;
+    store.getCurrentProfile().name = name;
     this.setState({name});
   }
 
   setPath(path: string) {
-    this.props.settings.getCurrentProfile().path = path;
+    store.getCurrentProfile().path = path;
     this.setState({path});
   }
 
   saveSettings() {
-    this.props.settings.saveSettings();
+    store.saveSettings();
   }
 
   render() {
     return (
       <div className="settings-container">
-        <Link to="/" onClick={() => this.props.settings.saveSettings()}><Icon className="close-icon" type="close" /></Link>
+        <Link to="/" onClick={() => store.saveSettings()}><Icon className="close-icon" type="close" /></Link>
         <Layout className='settingsLayout'>
           <Form>
             <OptionField label='Name' type='text' onChange={this.setName.bind(this)} onApply={this.saveSettings.bind(this)} value={this.state.name} />

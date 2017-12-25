@@ -12,7 +12,7 @@ export default class Networks {
   }
 
   deserialize(data: Object) {
-    this.networks = data.networks.map(d => new Network(new Stack([''])).deserialize(d));
+    this.networks = data.networks.map(d => new Network().deserialize(d));
     this.selectedNetwork = data.selectedNetwork;
     return this;
   }

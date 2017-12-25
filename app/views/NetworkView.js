@@ -1,11 +1,11 @@
 // @flow
 
 import React from 'react';
-import { Layout, Menu, Collapse, Input, Button, Select, Card, Avatar, Form, Tabs, Checkbox } from 'antd';
+import { Layout, Menu, Collapse, Input, Button, Select, Card, Avatar, Form, Tabs, Checkbox, Spin } from 'antd';
 import Network, { NetworkLayouts } from '../classes/Network';
 import Node from '../classes/Node';
 import Stack from '../classes/Stack';
-import { stores } from '../App';
+import { store } from '../App';
 import Recipe from '../classes/Recipe';
 import OptionField from './components/OptionField';
 import OptionSelect, { formItemLayout } from './components/OptionSelect';
@@ -18,10 +18,14 @@ const InputGroup = Input.Group;
 const FormItem = Form.Item;
 const TabPane = Tabs.TabPane;
 const { Meta } = Card;
-
 import style from './style/NetworkView.css';
 import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
 import { observer } from 'mobx-react';
+import ItemSelect from './components/ItemSelect';
+import ModList from './components/ModList';
+import ModSelect from './components/ModSelect';
+import FilterList from './components/FilterList';
+import FilterItem from '../classes/FilterItem';
 
 type Props = {
   network: Network,
@@ -31,12 +35,18 @@ type Props = {
 
 type State = {
   collapsed: boolean,
-  whitelistAdd: string, 
-  blacklistAdd: string,
+  filterAdd: string[],
   selectedNode: ?Node,
   selectedRecipes: Recipe[],
   blacklistInput: ?Input,
   whitelistInput: ?Input,
+}
+
+const collapseStyle = {
+  overflow: "auto", 
+  overflowX: "hidden", 
+  maxHeight: '93vh', 
+  background: 'rgba(0, 0, 0, 0)'
 }
 
 let networkViewInstance;
@@ -51,8 +61,7 @@ export default class NetworkView extends React.Component<Props, State> {
 
     this.state = {
       collapsed: false,
-      whitelistAdd: '',
-      blacklistAdd: '',
+      filterAdd: ['', '', ''],
       selectedNode: null,
       selectedRecipes: [],
       blacklistInput: null,
@@ -71,36 +80,26 @@ export default class NetworkView extends React.Component<Props, State> {
     }
   }
 
-  addWhitelistItem() {
-    this.props.network.filter.addWhitelistItem(new RegExp(this.state.whitelistAdd, "i"));
-    this.regenerate();
-    if (this.state.whitelistInput) {
-      this.state.whitelistInput.input.value = "";
-      this.state.whitelistInput.focus();
-    }
-    this.setState({whitelistAdd: ''});
+  setFilterState(index: number, value: string) {
+    let newFilter = this.state.filterAdd; 
+    newFilter[index] = value; 
+    this.setState({filterAdd: newFilter})
   }
 
-  addBlacklistItem(input: any) {
-    this.props.network.filter.addBlacklistItem(new RegExp(this.state.blacklistAdd, "i"));
-    this.regenerate();
-
-    if (this.state.blacklistInput) {
-      this.state.blacklistInput.input.value = "";
-      this.state.blacklistInput.focus();
-    }
-    
-    this.setState({blacklistAdd: ''});
+  filterAdd(index: number, item: FilterItem) {
+    this.props.network.filter.add(index, item);
+    this.props.network.reloadFilter();
   }
 
-  removeWhitelistItem(item: string) {
-    this.props.network.filter.removeWhitelistItem(item);
-    this.regenerate();
+  filterRemove(index: number, item: FilterItem) {
+    this.props.network.filter.remove(index, item);
+    this.props.network.reloadFilter();
   }
 
-  removeBlacklistItem(item: string) {
-    this.props.network.filter.removeBlacklistItem(item);
-    this.regenerate();
+  toggleInverse(index: number, item: FilterItem) {
+    this.props.network.filter.toggleInverse(index, item);
+    this.props.network.reloadFilter();
+    this.setState({});
   }
 
   setTarget(target: string) {
@@ -110,12 +109,10 @@ export default class NetworkView extends React.Component<Props, State> {
 
   setAlgorithm(index: number) {
     this.props.network.setAlgorithm(index);
-    this.regenerate();
   }
 
   setLayout(index: number) {
     this.props.network.setLayout(index);
-    this.regenerate();
   }
 
   togglePhysics() {
@@ -134,7 +131,7 @@ export default class NetworkView extends React.Component<Props, State> {
       if (node) {
         this.setState({selectedNode: node})
       } else {
-        this.setState({selectedNode: new Node(new Stack(['']), -1)})
+        this.setState({selectedNode: null})
       }
       
       if (edges) {
@@ -153,24 +150,27 @@ export default class NetworkView extends React.Component<Props, State> {
 
     this.props.network.setOnDoubleclickCallback((node, edges) => {
       if (node) {
-        /*node.stack.names.forEach(name => {
-          this.props.network.addBlacklistItem(new RegExp(name, "i"));
-        })*/
         this.props.addNetwork(node.stack, this.props.network.serialize());
-        this.regenerate();
       }
     });
   }
 
   componentDidMount() {
+    this.props.network.reloadFilter();
     this.regenerate();
   }
 
   render() {
     return (
-      <Layout>
-        <Content style={{height:"93vh", background: '#fff'}} id={this.props.network.id}>
-
+      <Layout className='nv-layout'>
+        {this.props.network.isLoading || store.isLoading ? 
+          <div className='loading-div'>
+            <div className='blur' />
+            <Spin className='spin' size='large' />
+          </div> 
+        : <p></p>}
+        <Content style={{height:"calc(100vh - 50px)", background: '#fff'}} id={this.props.network.id}>
+          
         </Content>
         <Sider
           collapsible
@@ -178,9 +178,9 @@ export default class NetworkView extends React.Component<Props, State> {
           collapsedWidth={0}
           collapsed={this.props.network.collapsed}
           width={window.innerWidth / 4}
-          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0" }}
+          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0", zIndex: "30" }}
         >
-          <Collapse bordered={false} onChange={() => {}} style={{overflow: "auto", overflowX: "hidden", maxHeight: '93vh', background: 'rgba(0, 0, 0, 0)'}}>
+          <Collapse bordered={false} style={collapseStyle}>
             {/* 
               ***
               Target
@@ -188,27 +188,7 @@ export default class NetworkView extends React.Component<Props, State> {
             */}
             <Collapse.Panel header="Target">    
               <Form>
-                <FormItem {...formItemLayout} label="Target">
-                  <Select
-                    showSearch
-                    filterOption={false}
-                    style={{ width: '100%' }}
-                    placeholder="Search an item"
-                    value={this.props.network.target.names[0]}
-                    onChange={value => {this.setTarget(value); this.regenerate()}}
-                    onSelect={value => {this.setTarget(value); this.regenerate()}}
-                  >
-                    {Object.entries(stores.nameMaps.list)
-                      .filter(item => 
-                        this.props.network.target.names[0].toLowerCase().replace('@', '').split(' ').every(input => 
-                          item[0].includes(input) || (typeof item[1] == 'string' ? item[1] : '').toLowerCase().includes(input)
-                        ) 
-                        && this.props.network.target.names[0] !== ''
-                      ).slice(0, 20).map((item, i) => 
-                      <Option key={i} value={item[0]}>{item[1]}</Option>
-                    )}
-                  </Select>
-                </FormItem>
+                <ItemSelect label="Target" placeholder="Search an item" value={this.props.network.target.names[0]} onSearch={this.setTarget.bind(this)} onSelect={this.setTarget.bind(this)} onChange={this.setTarget.bind(this)} />
                 <OptionField label='Amount' type='number' onChange={this.props.network.setTargetAmount.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.target.amount.toString()} />
               </Form>
             </Collapse.Panel>
@@ -239,39 +219,74 @@ export default class NetworkView extends React.Component<Props, State> {
                 <p style={{fontSize: '12px'}}>More options coming soon! :) </p>
               </Form>
             </Collapse.Panel>
-          
 
             {/* 
               ***
-              Blacklist
+              Filter
               ***
             */}
-            <Collapse.Panel header="Blacklist">       
-              <EditableList 
-                items={this.props.network.getBlacklist} 
-                onAdd={this.addBlacklistItem.bind(this)} 
-                onRemove={this.removeBlacklistItem.bind(this)} 
-                onChange={x => this.setState({blacklistAdd: x})} 
-                current={this.state.blacklistAdd}
-                inputRef={el => this.state.blacklistInput = el}
-              />
+            <Collapse.Panel header="Filter">
+              <Collapse bordered={false} style={collapseStyle}>
+                <Collapse.Panel header="Items">    
+                  <Form>
+                    <FilterList 
+                      nameMap={store.getCurrentProfile().nameMaps.titles} 
+                      onChange={item => this.toggleInverse(0, item)} 
+                      onRemove={item => this.filterRemove(0, item)} 
+                      items={this.props.network.filter.lists[0]} 
+                    />
+                    <ItemSelect 
+                      label="Add" 
+                      placeholder="Search an item" 
+                      value={this.state.filterAdd[0]} 
+                      onSearch={value => this.setFilterState(0, value)} 
+                      onChange={value => this.setFilterState(0, value)} 
+                      onSelect={value => this.filterAdd(0, new FilterItem(value))} 
+                    />
+                  </Form>
+                </Collapse.Panel>
+              </Collapse>    
+              <Collapse bordered={false} style={collapseStyle}>
+                <Collapse.Panel header="Catalysts">    
+                  <Form>
+                    <FilterList 
+                      nameMap={store.getCurrentProfile().nameMaps.titles} 
+                      onChange={item => this.toggleInverse(1, item)} 
+                      onRemove={item => this.filterRemove(1, item)} 
+                      items={this.props.network.filter.lists[1]} 
+                    />
+                    <ItemSelect 
+                      label="Add" 
+                      placeholder="Search an item" 
+                      value={this.state.filterAdd[1]} 
+                      onSearch={value => this.setFilterState(1, value)} 
+                      onChange={value => this.setFilterState(1, value)} 
+                      onSelect={value => this.filterAdd(1, new FilterItem(value))} 
+                    />
+                  </Form>
+                </Collapse.Panel>
+              </Collapse>
+              <Collapse bordered={false} style={collapseStyle}>
+                <Collapse.Panel header="Mods">    
+                  <Form>
+                    <FilterList 
+                      nameMap={store.getCurrentProfile().nameMaps.mods} 
+                      onChange={item => this.toggleInverse(2, item)} 
+                      onRemove={item => this.filterRemove(2, item)} 
+                      items={this.props.network.filter.lists[2]} 
+                    />
+                    <ModSelect 
+                      label="Add" 
+                      placeholder="Search a mod" 
+                      value={this.state.filterAdd[2]} 
+                      onSearch={value => this.setFilterState(2, value)} 
+                      onChange={value => this.setFilterState(2, value)} 
+                      onSelect={value => this.filterAdd(2, new FilterItem(value))} 
+                    />
+                  </Form>
+                </Collapse.Panel>
+              </Collapse>
             </Collapse.Panel>
-            
-            {/* 
-              ***
-              Whitelist
-              ***
-            */}
-            <Collapse.Panel header="Whitelist">
-              <EditableList 
-                items={this.props.network.getWhitelist} 
-                onAdd={this.addWhitelistItem.bind(this)} 
-                onRemove={this.removeWhitelistItem.bind(this)} 
-                onChange={x => this.setState({whitelistAdd: x})} 
-                current={this.state.whitelistAdd}
-                inputRef={el => this.state.whitelistInput = el}
-              />
-            </Collapse.Panel>    
 
             {/* 
               ***
@@ -290,7 +305,7 @@ export default class NetworkView extends React.Component<Props, State> {
             */}
             {this.state.selectedNode ? 
               <Collapse.Panel header="Selected Node">
-                <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="" items={[this.state.selectedNode.stack]} />
+                <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="" items={[new Stack(this.state.selectedNode.stack.names, this.state.selectedNode.amount)]} />
               </Collapse.Panel> : ''
             }
 
@@ -306,7 +321,7 @@ export default class NetworkView extends React.Component<Props, State> {
                 > 
                   {this.state.selectedRecipes.map((recipe, i) =>    
                     <TabPane tab={<Avatar src={
-                      `file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${recipe.outputs[0].names[0].replace(/:/g, "_")}.png`
+                      `file://${store.getCurrentProfile().path}/config/jeiexporter/items/${recipe.outputs[0].names[0].replace(/:/g, "_")}.png`
                     } />} key={i}>
                       <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="Catalysts" items={recipe.catalysts} />
                       <ItemList onClick={item => this.props.addNetwork(item, this.props.network.serialize())} label="Inputs" items={recipe.inputs.filter(item => item.names.length > 0 && item.amount > 0)} />

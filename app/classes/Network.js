@@ -7,10 +7,11 @@ import { INetworkAlgorithm } from './NetworkAlgorithm/INetworkAlgorithm';
 import Node from './Node';
 import vis from 'vis';
 import Recipes from '../stores/Recipes';
-import { stores } from '../App';
 import { NetworkAlgorithms } from './NetworkAlgorithm/NetworkAlgorithms';
 import Edge from './Edge';
 import Filter from './Filter';
+import { store } from '../App';
+import Recipe from './Recipe';
 
 export const NetworkLayouts = [
   {
@@ -45,20 +46,53 @@ export default class Network {
   @observable algorithm: number;
   algorithmInstance: INetworkAlgorithm;
   recipes: Recipes;
+  filteredRecipes: Recipes;
   visNetwork: vis.Network;
   @observable limit: number;
   @observable depth: number;
   @observable seed: ?number;
   @observable selectedLayout: number;
   @observable collapsed: boolean;
+  @observable isLoading: boolean;
 
-  constructor(target: Stack) {
-    this.target = target;
+  constructor() {
+    this.target = new Stack([''])
     this.id = uuidv4();
-    this.filter = new Filter([], []);
+    this.filter = new Filter();
     this.limit = 100;
     this.depth = 3;
     this.algorithm = 0;
+    this.isLoading = false;
+  }
+
+  createNew() {
+    this.setAlgorithm(0);
+    this.setVisOptions({
+      nodes: {
+        shape: 'image'
+      },
+      edges: {
+        width: 7,
+        arrows: {
+          middle: {enabled: true, scaleFactor: -1}
+        },
+        color: {inherit: 'to'}
+      },
+      physics: {
+        enabled: true,
+        barnesHut: {
+          springLength: 250,
+          springConstant: 0.003,
+          damping: 0.1
+        }
+      },
+      layout: {
+        hierarchical: {
+          enabled: false,
+        }
+      }
+    });
+    this.setLayout(0);
   }
   
   serialize(): Object {
@@ -82,11 +116,6 @@ export default class Network {
     if (data.filter) {
       this.filter = this.filter.deserialize(data.filter);
     }
-    if (data.whitelist && data.blacklist) {
-      // Migration
-      this.filter.whitelist = data.whitelist.map(item => new RegExp(item, "i"));
-      this.filter.blacklist = data.blacklist.map(item => new RegExp(item, "i"));
-    }
     this.algorithm = data.algorithm;
     this.limit = data.limit;
     this.depth = data.depth;
@@ -100,25 +129,24 @@ export default class Network {
   }
 
   generate() {
+    this.isLoading = true;
     this.algorithmInstance = new NetworkAlgorithms[this.algorithm]();
     this.algorithmInstance.target = this.target;
-    this.algorithmInstance.recipes = this.recipes;
+    this.algorithmInstance.recipes = this.filteredRecipes;
     this.algorithmInstance.limit = this.limit;
     this.algorithmInstance.depth = this.depth - 1;
-    this.algorithmInstance.filter = this.filter;
-    console.log(this.algorithmInstance.filter);
 
     let obj = this.algorithmInstance.generateNetwork(); 
     this.nodes = obj.nodes;
     this.edges = obj.edges;
 
-    stores.settings.saveSettings();
+    store.saveSettings();
   }
 
   visReload() {
     this.nodes.forEach(node => {
       if (node.stack.names.length > 0)
-        node.setImage(`file://${stores.settings.getCurrentProfile().path}/config/jeiexporter/items/${node.stack.names[0].replace(/:/g, "_")}.png`)
+        node.setImage(`file://${store.getCurrentProfile().path}/config/jeiexporter/items/${node.stack.names[0].replace(/:/g, "_")}.png`)
     });
 
     this.visOptions.layout.randomSeed = this.seed;
@@ -131,8 +159,17 @@ export default class Network {
 
     let container = document.getElementById(this.id);
     this.visNetwork = new vis.Network(container, {nodes: this.visNodes, edges: this.visEdges}, this.visOptions);
+    this.visNetwork.on("afterDrawing", () => {
+      this.isLoading = false;
+    })
 
     this.seed = this.visNetwork.getSeed();
+  }
+
+  @action reloadFilter() {
+    this.filteredRecipes = new Recipes();
+    this.filteredRecipes.recipes = this.recipes.recipes.slice();
+    this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
   }
 
   @action newSeed() {
@@ -183,12 +220,8 @@ export default class Network {
     return this.target.names[0];
   }
 
-  @computed get getWhitelist(): string[] {
-    return this.filter.whitelist.map(i => i.source)
-  }
-
-  @computed get getBlacklist(): string[] {
-    return this.filter.blacklist.map(i => i.source)
+  @computed get getFilter(): Filter {
+    return this.filter
   }
 
   @computed get listAllAlgortihms(): string[] {
@@ -197,9 +230,6 @@ export default class Network {
 
   setOnclickCallback(cb: Function) {
     this.visNetwork.on("click", params => {
-      if (params.edges[0]) {
-        console.log(this.visEdges.get(params.edges[0]))
-      }
       cb(
         params.nodes.length == 1 ? this.nodes.find(node => node.id == params.nodes[0]): null,
         params.edges.length > 0 ? this.edges.filter(edge => params.edges.includes(edge.id)): null

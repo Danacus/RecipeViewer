@@ -10,10 +10,8 @@ import Filter from "../Filter";
 export default class DefaultAlgorithm implements INetworkAlgorithm {
   target: Stack;
   recipes: Recipes;
-  filteredRecipes: Recipes;
   limit: number;
   depth: number;
-  filter: Filter;
   counter: number;
   nodes: Node[];
   edges: Edge[];
@@ -30,9 +28,6 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
 
   generateNetwork(): any {
     let targetNode: Node = new Node(this.target, 0, this.target.amount);
-    // When you realize you should be using Immutable instead
-    this.filteredRecipes = new Recipes(this.recipes.list.slice());
-    this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
     this.counter = 0;
     this.createNode(targetNode, 0);
     return {nodes: this.nodes, edges: this.edges};
@@ -46,7 +41,7 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
       return;
     }
 
-    let parentRecipes = this.filteredRecipes.getRecipesWithOutput(node.stack);
+    let parentRecipes = this.recipes.getRecipesWithOutput(node.stack);
 
     parentRecipes.forEach((recipe, i, recipes) => {
       recipe.inputs.forEach(input => {

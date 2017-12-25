@@ -1,8 +1,10 @@
 // @flow
 
+import { observable } from "mobx";
+
 export default class Stack {
-  names: string[];
-  amount: number;
+  @observable names: string[];
+  @observable amount: number;
   constructor(names: string[], amount: number = 0) {
     this.names = names;
     this.amount = amount;
@@ -39,5 +41,9 @@ export default class Stack {
         name.match(regex)
       )
     )
+  }
+
+  getMods(): string[] {
+    return this.names.filter(name => name != null).map(name => name.split(":")[0]);
   }
 }

@@ -18,3 +18,36 @@
 .actions button {
   margin-bottom: 10px;
 }
+
+.filter-meta {
+  width: calc(100vw / 4 - 200px);
+  overflow-x: hidden;
+}
+
+.nv-layout {
+  width: 100vw !important;
+}
+
+.loading-div {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  z-index: 20;
+}
+
+.blur {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  z-index: 19;
+  background: rgba(255, 255, 255, 1);
+}
+
+.spin {
+  margin: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 20;
+  transform: translate(-50%, -50%);
+}

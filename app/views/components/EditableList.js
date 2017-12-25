@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 import { List, Row, Col, Input, Icon, Button } from 'antd';
 import Stack from '../../classes/Stack';
-import { stores } from '../../App';
 
 type Props = {
   items: Array<string>,
