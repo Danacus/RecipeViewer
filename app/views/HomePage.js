@@ -83,6 +83,10 @@ class HomePage extends Component<Props, State> {
   }
 
   openSettings() {
+    this.setState({
+      name: store.getCurrentProfile().name,
+      path: store.getCurrentProfile().path
+    });
     this.setState({showSettings: true});
   }
 
