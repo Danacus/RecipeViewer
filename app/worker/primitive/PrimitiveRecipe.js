@@ -1,16 +1,16 @@
 // @flow
 
-import Stack from "./Stack";
+import PrimitiveStack from "./PrimitiveStack";
 
 export default class Recipe {
-  inputs: Stack[];
-  outputs: Stack[];
-  catalysts: Stack[];
+  inputs: PrimitiveStack[];
+  outputs: PrimitiveStack[];
+  catalysts: PrimitiveStack[];
   category: string;
   id: number;
   props: Object;
 
-  constructor(inputs: Stack[], outputs: Stack[], catalysts: Stack[], id: number) {
+  constructor(inputs: PrimitiveStack[], outputs: PrimitiveStack[], catalysts: PrimitiveStack[], id: number) {
     this.inputs = inputs;
     this.outputs = outputs;
     this.catalysts = catalysts;
@@ -29,9 +29,9 @@ export default class Recipe {
   }
 
   deserialize(data: Object) {
-    this.inputs = data.inputs.map(input => new Stack(['']).deserialize(input));
-    this.outputs = data.outputs.map(output => new Stack(['']).deserialize(output));
-    this.catalysts = data.catalysts.map(catalyst => new Stack(['']).deserialize(catalyst));
+    this.inputs = data.inputs.map(input => new PrimitiveStack(['']).deserialize(input));
+    this.outputs = data.outputs.map(output => new PrimitiveStack(['']).deserialize(output));
+    this.catalysts = data.catalysts.map(catalyst => new PrimitiveStack(['']).deserialize(catalyst));
     this.id = data.id;
     this.category = data.category;
     this.props = {};

@@ -20,4 +20,23 @@ export default class Edge {
     this.id = id;
     this.props = {};
   }
+
+  serialize(): Object {
+    return {
+      child: this.child.serialize(),
+      parent: this.parent.serialize(),
+      recipe: this.recipe.serialize(),
+      recipeIndex: this.recipeIndex,
+      id: this.id
+    }
+  }
+
+  deserialize(data: Object) {
+    this.child = new Node(new Stack(['']), -1, -1).deserialize(data.child);
+    this.parent = new Node(new Stack(['']), -1, -1).deserialize(data.parent);
+    this.recipe = new Recipe([], [], [], -1).deserialize(data.recipe);
+    this.recipeIndex = data.recipeIndex;
+    this.id = data.id;
+    return this;
+  }
 }

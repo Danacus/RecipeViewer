@@ -10,7 +10,6 @@ import Recipe from '../classes/Recipe';
 import OptionField from './components/OptionField';
 import OptionSelect, { formItemLayout } from './components/OptionSelect';
 import ItemList from './components/ItemList';
-import EditableList from './components/EditableList';
 const SubMenu = Menu.SubMenu;
 const { Header, Content, Footer, Sider } = Layout;
 const Option = Select.Option;
@@ -19,13 +18,14 @@ const FormItem = Form.Item;
 const TabPane = Tabs.TabPane;
 const { Meta } = Card;
 import style from './style/NetworkView.css';
-import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
+import { NetworkAlgorithms } from '../worker/NetworkAlgorithm/NetworkAlgorithms';
 import { observer } from 'mobx-react';
 import ItemSelect from './components/ItemSelect';
-import ModList from './components/ModList';
-import ModSelect from './components/ModSelect';
 import FilterList from './components/FilterList';
 import FilterItem from '../classes/FilterItem';
+import CategoryList from './components/CategoryList';
+import CategorySelect from './components/CategorySelect';
+import ModSelect from './components/ModSelect';
 
 type Props = {
   network: Network,
@@ -61,7 +61,7 @@ export default class NetworkView extends React.Component<Props, State> {
 
     this.state = {
       collapsed: false,
-      filterAdd: ['', '', ''],
+      filterAdd: ['', '', '', ''],
       selectedNode: null,
       selectedRecipes: [],
       blacklistInput: null,
@@ -88,17 +88,14 @@ export default class NetworkView extends React.Component<Props, State> {
 
   filterAdd(index: number, item: FilterItem) {
     this.props.network.filter.add(index, item);
-    this.props.network.reloadFilter();
   }
 
   filterRemove(index: number, item: FilterItem) {
     this.props.network.filter.remove(index, item);
-    this.props.network.reloadFilter();
   }
 
   toggleInverse(index: number, item: FilterItem) {
     this.props.network.filter.toggleInverse(index, item);
-    this.props.network.reloadFilter();
     this.setState({});
   }
 
@@ -124,51 +121,43 @@ export default class NetworkView extends React.Component<Props, State> {
       return;
     }
 
-    this.props.network.generate();
-    this.props.network.visReload();
+    this.props.network.generate().then(() => {
+      this.props.network.setOnclickCallback((node, edges) =>  {
+        if (node) {
+          this.setState({selectedNode: node})
+        } else {
+          this.setState({selectedNode: null})
+        }
+        
+        if (edges) {
+          let recipes = edges.map(edge => edge.recipe).reduce((total, current) => {
+            if (!total.some(recipe => recipe.id == current.id)) {
+              total.push(current);
+            }
     
-    this.props.network.setOnclickCallback((node, edges) =>  {
-      if (node) {
-        this.setState({selectedNode: node})
-      } else {
-        this.setState({selectedNode: null})
-      }
-      
-      if (edges) {
-        let recipes = edges.map(edge => edge.recipe).reduce((total, current) => {
-          if (!total.some(recipe => recipe.id == current.id)) {
-            total.push(current);
-          }
+            return total;
+          }, [])
+          this.setState({selectedRecipes: recipes})
+        } else {
+          this.setState({selectedRecipes: []})
+        }    
+       });
   
-          return total;
-        }, [])
-        this.setState({selectedRecipes: recipes})
-      } else {
-        this.setState({selectedRecipes: []})
-      }    
-     });
-
-    this.props.network.setOnDoubleclickCallback((node, edges) => {
-      if (node) {
-        this.props.addNetwork(node.stack, this.props.network.serialize());
-      }
+      this.props.network.setOnDoubleclickCallback((node, edges) => {
+        if (node) {
+          this.props.addNetwork(node.stack, this.props.network.serialize());
+        }
+      });
     });
   }
 
   componentDidMount() {
-    this.props.network.reloadFilter();
-    this.regenerate();
+    this.setState({});
   }
 
   render() {
     return (
       <Layout className='nv-layout'>
-        {this.props.network.isLoading || store.isLoading ? 
-          <div className='loading-div'>
-            <div className='blur' />
-            <Spin className='spin' size='large' />
-          </div> 
-        : <p></p>}
         <Content style={{height:"calc(100vh - 50px)", background: '#fff'}} id={this.props.network.id}>
           
         </Content>
@@ -178,7 +167,7 @@ export default class NetworkView extends React.Component<Props, State> {
           collapsedWidth={0}
           collapsed={this.props.network.collapsed}
           width={window.innerWidth / 4}
-          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0", zIndex: "30" }}
+          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0", zIndex: "3" }}
         >
           <Collapse bordered={false} style={collapseStyle}>
             {/* 
@@ -189,7 +178,7 @@ export default class NetworkView extends React.Component<Props, State> {
             <Collapse.Panel header="Target">    
               <Form>
                 <ItemSelect label="Target" placeholder="Search an item" value={this.props.network.target.names[0]} onSearch={this.setTarget.bind(this)} onSelect={this.setTarget.bind(this)} onChange={this.setTarget.bind(this)} />
-                <OptionField label='Amount' type='number' onChange={this.props.network.setTargetAmount.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.target.amount.toString()} />
+                <OptionField label='Amount' type='number' onChange={this.props.network.setTargetAmount.bind(this.props.network)} value={this.props.network.target.amount.toString()} />
               </Form>
             </Collapse.Panel>
 
@@ -201,8 +190,8 @@ export default class NetworkView extends React.Component<Props, State> {
             <Collapse.Panel header="Algorithm">
               <Form>
                 <OptionSelect label='Algorithm' placeholder='Select an algorithm' onSelect={this.setAlgorithm.bind(this)} current={this.props.network.algorithm} items={NetworkAlgorithms.map(alg => alg.name())} />
-                <OptionField label='Limit' type='number' onChange={this.props.network.setLimit.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.limit.toString()} />
-                <OptionField label='Depth' type='number' onChange={this.props.network.setDepth.bind(this.props.network)} onApply={this.regenerate.bind(this)} value={this.props.network.depth.toString()} />
+                <OptionField label='Limit' type='number' onChange={this.props.network.setLimit.bind(this.props.network)} value={this.props.network.limit.toString()} />
+                <OptionField label='Depth' type='number' onChange={this.props.network.setDepth.bind(this.props.network)} value={this.props.network.depth.toString()} />
               </Form>
             </Collapse.Panel>
 
@@ -286,6 +275,25 @@ export default class NetworkView extends React.Component<Props, State> {
                   </Form>
                 </Collapse.Panel>
               </Collapse>
+              <Collapse bordered={false} style={collapseStyle}>
+                <Collapse.Panel header="Categories">    
+                  <Form>
+                    <CategoryList 
+                      onChange={item => this.toggleInverse(3, item)} 
+                      onRemove={item => this.filterRemove(3, item)} 
+                      items={this.props.network.filter.lists[3]} 
+                    />
+                    <CategorySelect 
+                      label="Add" 
+                      placeholder="Search a category" 
+                      value={this.state.filterAdd[3]} 
+                      onSearch={value => this.setFilterState(3, value)} 
+                      onChange={value => this.setFilterState(3, value)} 
+                      onSelect={value => this.filterAdd(3, new FilterItem(value))} 
+                    />
+                  </Form>
+                </Collapse.Panel>
+              </Collapse>
             </Collapse.Panel>
 
             {/* 
@@ -295,7 +303,8 @@ export default class NetworkView extends React.Component<Props, State> {
             */}
             <Collapse.Panel header="Actions" className="actions">
               <Button onClick={() => this.regenerate()}>Reload Network</Button><br />
-              <Button onClick={() => {this.props.network.newSeed(); this.regenerate()}}>Randomize seed</Button>
+              <Button onClick={() => {this.props.network.newSeed(); this.regenerate()}}>Randomize seed</Button><br />
+              <Button onClick={() => store.saveSettings()}>Save settings</Button>
             </Collapse.Panel>
 
             {/* 

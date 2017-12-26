@@ -1,20 +1,19 @@
 // @flow
 
 import { INetworkAlgorithm } from "./INetworkAlgorithm";
-import Node from "../Node";
-import Edge from "../Edge";
-import Stack from '../Stack';
-import Recipes from '../../stores/Recipes';
-import Filter from "../Filter";
+import PrimitiveStack from '../primitive/PrimitiveStack';
+import PrimitiveRecipes from '../primitive/PrimitiveRecipes';
+import PrimitiveNode from "../primitive/PrimitiveNode";
+import PrimitiveEdge from "../primitive/PrimitiveEdge";
 
 export default class AutoMerge implements INetworkAlgorithm {
-  target: Stack;
-  recipes: Recipes;
+  target: PrimitiveStack;
+  recipes: PrimitiveRecipes;
   limit: number;
   depth: number;
   counter: number;
-  nodes: Node[];
-  edges: Edge[];
+  nodes: PrimitiveNode[];
+  edges: PrimitiveEdge[];
 
   constructor() {
     this.counter = 0;
@@ -27,14 +26,14 @@ export default class AutoMerge implements INetworkAlgorithm {
   }
 
   generateNetwork(): any {
-    let targetNode: Node = new Node(this.target, 0, this.target.amount);
+    let targetNode: PrimitiveNode = new PrimitiveNode(this.target, 0, this.target.amount);
     this.counter = 0;
     this.createNode(targetNode, 0, []);
     this.reduceEdges();
     return {nodes: this.nodes, edges: this.edges};
   }
 
-  createNode(node: Node, depth: number, nodes: Node[]) {
+  createNode(node: PrimitiveNode, depth: number, nodes: PrimitiveNode[]) {
     this.nodes.push(node);
     this.counter++;
 
@@ -52,13 +51,13 @@ export default class AutoMerge implements INetworkAlgorithm {
             equalNode.addChild(node);  
             node.addParent(equalNode);
             nodes.push(equalNode);
-            this.edges.push(new Edge(equalNode, node, recipe, i, this.edges.length + 1));
+            this.edges.push(new PrimitiveEdge(equalNode, node, recipe, i, this.edges.length + 1));
           } else {
-            let n: Node = new Node(input, this.nodes.length + 1, 0, recipe.id);
+            let n: PrimitiveNode = new PrimitiveNode(input, this.nodes.length + 1, 0, recipe.id);
             n.addChild(node);  
             node.addParent(n);
             nodes.push(n);
-            this.edges.push(new Edge(n, node, recipe, i, this.edges.length + 1));
+            this.edges.push(new PrimitiveEdge(n, node, recipe, i, this.edges.length + 1));
             this.createNode(n, depth + 1, nodes);
           }    
         } 

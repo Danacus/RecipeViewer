@@ -7,19 +7,18 @@ import FilterItem from '../../classes/FilterItem';
 
 type Props = {
   items: Array<FilterItem>,
-  nameMap: Object,
   onRemove: Function,
   onChange: Function
 }
 
-export default class FilterList extends Component<Props> {
+export default class CategoryList extends Component<Props> {
   render() {return (
     <div>
-      <List
-        size="small"
-        bordered={false}
-        dataSource={this.props.items}
-        renderItem={item => (
+        <List
+          size="small"
+          bordered={false}
+          dataSource={this.props.items}
+          renderItem={item => (
           <List.Item actions={[
             <Tooltip placement="left" title={item.inverse ? 'blacklisted' : 'whitelisted'}>
               <Switch onChange={e => this.props.onChange(item)} checked={!item.inverse} checkedChildren={<Icon type="check" />} unCheckedChildren={<Icon type="cross" />} />
@@ -27,13 +26,12 @@ export default class FilterList extends Component<Props> {
             <Icon type="close" onClick={() => this.props.onRemove(item)} />
           ]}>
             <List.Item.Meta
-              title={this.props.nameMap[item.value]}
-              description={item.value}
+              title={item.value}
               className='filter-meta'
-            />
-          </List.Item>
-        )}
-      />
+              />
+            </List.Item>
+          )}
+        />
     </div>
   )}
 }

@@ -9,9 +9,11 @@ import Recipes from './Recipes';
 const app = electron.remote.app;
 
 export default class Settings {
-  @observable profiles: Profile[];
+  profiles: Profile[];
   @observable selectedProfile: number;
   @observable isLoading: boolean = false;
+  tasksSet: Set<string> = new Set();
+  @observable tasks: Array<string> = [];
 
   @action loadSettings(): Promise<any> {
     this.isLoading = true;
@@ -25,7 +27,7 @@ export default class Settings {
       } else {
         this.readFile(file).then(settings => resolve());
       }
-    })
+    });
   }
 
   readFile(path: string): Promise<any> {
@@ -34,12 +36,21 @@ export default class Settings {
         this.profiles = settings.profiles.map(profile => {
           return new Profile(profile.name, profile.path, new Networks().deserialize(profile.networks))
         })
-        this.selectProfile(settings.selectedProfile).then(() => {
-          this.isLoading = false;
-          resolve();
-        });
-      })
-    })
+        this.selectedProfile = settings.selectedProfile;
+        this.isLoading = false;
+        resolve();
+      });
+    });
+  }
+
+  @action addTask(task: string) {
+    this.tasksSet.add(task)
+    this.tasks = [...this.tasksSet];
+  }
+
+  @action removeTask(task: string) {
+    this.tasksSet.delete(task);
+    this.tasks = [...this.tasksSet];
   }
 
   @action setProfiles(profiles: Profile[]) {
@@ -67,8 +78,9 @@ export default class Settings {
     return this.profiles[index];
   }
 
-  @action saveSettings() {
+  saveSettings() {
+    console.log('start saving');
     let file = app.getPath('userData') + "/settings.json";
-    return jetpack.writeAsync(file, {profiles: this.profiles.map(profile => ({name: profile.name, path: profile.path, networks: profile.networks.serialize()})), selectedProfile: this.selectedProfile});
+    return jetpack.writeAsync(file, {profiles: this.profiles.map(profile => ({name: profile.name, path: profile.path, networks: profile.networks.serialize()})), selectedProfile: this.selectedProfile}).then(console.log('end saving'));
   }
 }

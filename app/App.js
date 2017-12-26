@@ -14,11 +14,11 @@ import SettingsPage from './views/SettingsPage';
 import Network from './classes/Network';
 import Stack from './classes/Stack';
 import Settings from './stores/Settings';
-import DefaultAlgorithm from './classes/NetworkAlgorithm/DefaultAlgorithm';
 import { withRouter } from "react-router";
 import NameMaps from "./stores/NameMaps";
 import { networkViewInstance } from "./views/NetworkView";
 import { Spin } from 'antd';
+import { ipcRenderer } from "electron";
 
 export const store = new Settings();
 
@@ -62,27 +62,12 @@ export default class App extends Component<Props, State> {
                 <HomePage {...routeProps} />
               )}
             />
-            <Route exact path="/firstlaunch"
-              render={(routeProps) => (
-                <CreateProfilePage />
-              )}
-            />
-            <Route exact path="/settings"
-              render={(routeProps) => (
-                <SettingsPage />
-              )}
-            />
             <Route exact path="/"
               render={(routeProps) => (
                 <div>
                 {this.state.ready ?   
-                  store.profiles.length < 0 ? 
-                    <Redirect to="/firstlaunch" push={true} /> : 
-                    <Redirect to="/homepage" push={true} /> :
-                  <div className='loading-div'>
-                    <div className='blur' />
-                    <Spin className='spin' size='large' />
-                  </div> 
+                  <Redirect to="/homepage" push={true} /> :
+                  <div></div> 
                 }
                 </div>
               )}

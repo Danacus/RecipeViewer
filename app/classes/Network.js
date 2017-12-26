@@ -3,15 +3,16 @@
 import {observable, action, computed, toJS} from 'mobx';
 import Stack from './Stack';
 import uuidv4 from 'uuid/v4';
-import { INetworkAlgorithm } from './NetworkAlgorithm/INetworkAlgorithm';
+import { INetworkAlgorithm } from '../worker/NetworkAlgorithm/INetworkAlgorithm';
 import Node from './Node';
 import vis from 'vis';
 import Recipes from '../stores/Recipes';
-import { NetworkAlgorithms } from './NetworkAlgorithm/NetworkAlgorithms';
+import { NetworkAlgorithms } from '../worker/NetworkAlgorithm/NetworkAlgorithms';
 import Edge from './Edge';
 import Filter from './Filter';
 import { store } from '../App';
 import Recipe from './Recipe';
+import { ipcRenderer } from 'electron';
 
 export const NetworkLayouts = [
   {
@@ -53,7 +54,6 @@ export default class Network {
   @observable seed: ?number;
   @observable selectedLayout: number;
   @observable collapsed: boolean;
-  @observable isLoading: boolean;
 
   constructor() {
     this.target = new Stack([''])
@@ -62,11 +62,11 @@ export default class Network {
     this.limit = 100;
     this.depth = 3;
     this.algorithm = 0;
-    this.isLoading = false;
   }
 
   createNew() {
     this.setAlgorithm(0);
+    this.setTarget('minecraft:cake:0');
     this.setVisOptions({
       nodes: {
         shape: 'image'
@@ -128,19 +128,36 @@ export default class Network {
     this.visOptions = visOptions;
   }
 
-  generate() {
-    this.isLoading = true;
-    this.algorithmInstance = new NetworkAlgorithms[this.algorithm]();
-    this.algorithmInstance.target = this.target;
-    this.algorithmInstance.recipes = this.filteredRecipes;
-    this.algorithmInstance.limit = this.limit;
-    this.algorithmInstance.depth = this.depth - 1;
+  @action generate(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let task = 'Generating network';
+      store.addTask(task);
 
-    let obj = this.algorithmInstance.generateNetwork(); 
-    this.nodes = obj.nodes;
-    this.edges = obj.edges;
-
-    store.saveSettings();
+      ipcRenderer.send('start', {
+        type: 'algorithm',
+        network: this.id,
+        algorithm: this.algorithm,
+        target: this.target.serialize(),
+        recipes: this.recipes.serialize(),
+        filter: this.filter.serialize(),
+        limit: this.limit,
+        depth: this.depth - 1
+      })
+  
+      ipcRenderer.on('algorithm-response', (event, data) => {
+        if (data.network === this.id) {
+          ipcRenderer.removeAllListeners('algorithm-response')
+          this.nodes = data.nodes.map(node => new Node(new Stack(['']), -1, -1, -1).deserialize(node));
+          this.edges = data.edges.map(edge => new Edge(new Node(new Stack(['']), -1, -1, -1), new Node(new Stack(['']), -1, -1, -1), new Recipe([], [], [], -1), -1, -1).deserialize(edge));
+          store.removeTask(task);
+          store.addTask('vis.js: loading network');
+          this.visReload();
+          resolve();
+        }
+      })
+  
+      store.saveSettings();
+    }); 
   }
 
   visReload() {
@@ -160,16 +177,10 @@ export default class Network {
     let container = document.getElementById(this.id);
     this.visNetwork = new vis.Network(container, {nodes: this.visNodes, edges: this.visEdges}, this.visOptions);
     this.visNetwork.on("afterDrawing", () => {
-      this.isLoading = false;
+      store.removeTask('vis.js: loading network');
     })
 
     this.seed = this.visNetwork.getSeed();
-  }
-
-  @action reloadFilter() {
-    this.filteredRecipes = new Recipes();
-    this.filteredRecipes.recipes = this.recipes.recipes.slice();
-    this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
   }
 
   @action newSeed() {
