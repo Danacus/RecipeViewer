@@ -7,7 +7,6 @@ const app = electron.app
 const BrowserWindow = electron.BrowserWindow
 const cp = require('child_process');
 
-var windows = {};
 var children = {};
 
 if (process.env.NODE_ENV === "development") {
@@ -36,15 +35,7 @@ ipcMain.on('start', (event, data) => {
   child.send(data);
   child.on('message', (data) => {
     mainWindow.webContents.send(data.type, data);
-    child.kill();
+    child.kill('SIGHUP');
   });
-});
-
-ipcMain.on('response', (event, data) => {
-  if (windows[event.sender.id] != null) {
-    mainWindow.webContents.send(data.type, data);
-    windows[event.sender.id].close();
-    windows[event.sender.id] = null;
-  }
 });
 

@@ -146,6 +146,7 @@ export default class Network {
   
       ipcRenderer.on('algorithm-response', (event, data) => {
         if (data.network === this.id) {
+          ipcRenderer.removeAllListeners('algorithm-response')
           this.nodes = data.nodes.map(node => new Node(new Stack(['']), -1, -1, -1).deserialize(node));
           this.edges = data.edges.map(edge => new Edge(new Node(new Stack(['']), -1, -1, -1), new Node(new Stack(['']), -1, -1, -1), new Recipe([], [], [], -1), -1, -1).deserialize(edge));
           store.removeTask(task);
