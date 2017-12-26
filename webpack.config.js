@@ -50,7 +50,11 @@ const config = {
         return callback();
       };
     })()
-  ]
+	],
+	node: {
+		process: false,
+		global: false
+	}
 }
 
 module.exports = config

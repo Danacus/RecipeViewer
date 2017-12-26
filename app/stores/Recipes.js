@@ -10,6 +10,7 @@ import { store } from "../App";
 
 export default class Recipes {
   @observable recipes: Recipe[] = [];
+  @observable categories: string[] = [];
 
   @computed get list(): Recipe[] {
     return this.recipes;
@@ -17,12 +18,14 @@ export default class Recipes {
 
   serialize(): Object {
     return {
-      recipes: this.recipes.map(recipe => recipe.serialize())
+      recipes: this.recipes.map(recipe => recipe.serialize()),
+      categories: this.categories
     }
   }
 
   deserialize(data: Object) {
     this.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
+    this.categories = data.categories;
     return this;
   }
 
@@ -58,21 +61,25 @@ export default class Recipes {
         }
 
         let counter = chunks.length;
-        chunks.forEach((chunk, i) => {
-          store.tasks.push(`Worker #${i}: Loading recipes...`);
+        chunks.forEach((chunk, i) => {   
           ipcRenderer.send('start', {path: chunk, type: 'recipeloader'});
         });
 
+        store.addTask(`Loading recipes (${chunks.length - counter + 1}/${chunks.length})`);
+
         ipcRenderer.on('recipeloader-response', (event, data) => {  
+          store.removeTask(`Loading recipes (${chunks.length - counter + 1}/${chunks.length})`);
           counter--; 
           data.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
-          console.log("Added recipe file")
-          store.tasks = store.tasks.filter(task => task != `Worker #${counter}: Loading recipes...`);
+          console.log("Added recipe file");
+          store.addTask(`Loading recipes (${chunks.length - counter + 1}/${chunks.length})`);    
 
-          this.recipes = this.recipes.concat(data.recipes);   
+          this.recipes = this.recipes.concat(data.recipes);  
+          this.categories = this.categories.concat(data.categories); 
 
           if (counter == 0) {
             console.log("Done")
+            store.removeTask(`Loading recipes (${chunks.length - counter + 1}/${chunks.length})`);
             ipcRenderer.removeAllListeners('recipeloader-response');
             resolve();
           }
@@ -80,36 +87,4 @@ export default class Recipes {
       })
     })
   }
-
-  readRecipeFile(file: string): Promise<any> {
-    return jetpack.readAsync(file, 'json').then(file => this.loadRecipeFile(file))
-  }
-
-  loadRecipeFile(file: {recipes: [], catalysts: []}) {
-    let recipes: Recipe[] = [];
-    file.recipes.forEach((recipe, i) => {
-      recipes.push(new Recipe(
-        recipe.input.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
-        recipe.output.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
-        file.catalysts.map(catalyst => new Stack([catalyst])),
-        i
-      ))
-    })
-
-    return recipes;
-  }
-}
-
-const reduceStacks = (stacks: Stack[]) => {
-  return stacks.reduce((total: Array<Stack>, current: Stack) => {
-    let other = total.find(stack => stack.equals(current));
-
-    if (!other) {
-      total.push(current);
-    } else {
-      other.amount += current.amount;
-    }
-
-    return total;
-  }, [])
 }

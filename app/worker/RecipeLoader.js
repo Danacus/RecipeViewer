@@ -5,10 +5,12 @@ import Stack from "../classes/Stack";
 export default class RecipeLoader {
   paths: string[];
   recipes: Recipe[];
+  categories: string[];
 
   constructor(paths: string[]) {
     this.paths = paths;
     this.recipes = [];
+    this.categories = [];
   }
 
   readRecipeFiles(): Promise<any> {
@@ -24,21 +26,27 @@ export default class RecipeLoader {
     });
   }
 
-  loadRecipeFile(file: {recipes: [], catalysts: []}) {
+  loadRecipeFile(file: Object) {
     let recipes: Recipe[] = [];
     file.recipes.forEach((recipe, i) => {
-      recipes.push(new Recipe(
+      let recipeObj = new Recipe(
         recipe.input.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
         recipe.output.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
         file.catalysts.map(catalyst => new Stack([catalyst])),
         i
-      ))
+      );
+      recipeObj.category = file.title;
+      recipes.push(recipeObj);
     })
 
     recipes.forEach(recipe => {
       recipe.inputs = reduceStacks(recipe.inputs);
     })
 
+    if (file.title) {
+      this.categories.push(file.title);
+    }
+    
     recipes = recipes.map(recipe => recipe.serialize());
 
     return recipes;

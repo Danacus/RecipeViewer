@@ -16,7 +16,7 @@ import { store } from '../App';
 import Profile from '../classes/Profile';
 
 type Props = {
-
+  onReady: Function;
 }
 
 type State = {
@@ -25,33 +25,26 @@ type State = {
   path: string,
   inputValue: string,
   exporterInstalled: boolean,
-  nameInputValue: string,
-  profileIndex: number
+  nameInputValue: string
 }
+
+let createProfileInstance;
 
 @observer
 class CreateProfilePage extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-
-    this.state = {
-      path: '',
-      steps: [],
-      currentStep: 0,
-      inputValue: '',
-      exporterInstalled: false,
-      nameInputValue: '',
-      profileIndex: store.profiles.length
-    };
+    createProfileInstance = this;
   }
 
   cancel() {
-    store.setProfiles(store.profiles.filter((profile, i) => i != this.state.profileIndex));
+    store.setProfiles(store.profiles.filter((profile, i) => i != store.profiles.length - 1));
   }
 
-  onChangeName(path: string) {
-    this.setState({nameInputValue: path, profileIndex: store.profiles.length});
+  onChangeName(name: string) {
+    this.setState({nameInputValue: name});
+    store.getProfile(store.profiles.length - 1).name = name;
   }
 
   onChangePath(path: string) {
@@ -59,6 +52,7 @@ class CreateProfilePage extends Component<Props, State> {
     jetpack.existsAsync(path + '/mods').then(result => {
       if (result == 'dir') {
         this.setState({path});
+        store.getProfile(store.profiles.length - 1).path = path;
       } else {
         this.setState({path: ''});
       }
@@ -74,9 +68,6 @@ class CreateProfilePage extends Component<Props, State> {
 
   setCurrentStep(currentStep: number) {
     this.setState({currentStep});
-    if (currentStep == 1) {
-      store.addProfile(new Profile(this.state.nameInputValue, '', new Networks()))
-    }
 
     if (currentStep == 2) { 
       this.checkExporter();
@@ -87,18 +78,21 @@ class CreateProfilePage extends Component<Props, State> {
     jetpack.existsAsync(this.state.path + '/config/jeiexporter/exports').then(result => {
       if (result == 'dir') {
         this.setState({exporterInstalled: true});   
-        store.getProfile(this.state.profileIndex).path = this.state.path;
-        store.saveSettings().then(store.loadSettings.bind(store)).then(() => {
-          this.setCurrentStep(3);
-        })
+        this.setCurrentStep(3);
       } else {
         this.setState({exporterInstalled: false});
       }
     });
   }
 
-  componentWillMount() { 
+  reset() {
     this.setState({
+      path: '',
+      steps: [],
+      currentStep: 0,
+      inputValue: '',
+      exporterInstalled: false,
+      nameInputValue: '',
       steps: [
         {
           title: "Choose a name",
@@ -136,27 +130,28 @@ class CreateProfilePage extends Component<Props, State> {
           title: "Done",
           content: () => <div>
             Sucessfully added a new profile!<br /><br />
-            <Link to="/"><Button type='primary'>Let's go</Button></Link>
+            <Button type='primary' onClick={() => {this.reset(); this.props.onReady()}}>Let's go</Button>
           </div>
         }
       ],
     });
   }
 
-  render() {
+  componentWillMount() { 
+    this.reset();
+  }
 
+  render() {
     return (
       <div className="create-profile">
-        <Link to="/" onClick={() => this.cancel()}><Icon className="close-icon" type="close" /></Link>
-        <Layout className='flpLayout'>
           <Steps current={this.state.currentStep}>
             {this.state.steps.map(item => <Step key={item.title} title={item.title} />)}
           </Steps>
           <div className="steps-content">{this.state.steps[this.state.currentStep].content(this.state)}</div>
-        </Layout>
       </div>
     );
   }
 }
 
 export default CreateProfilePage;
+export { createProfileInstance };

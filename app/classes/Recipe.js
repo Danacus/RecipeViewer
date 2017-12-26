@@ -6,6 +6,7 @@ export default class Recipe {
   inputs: Stack[];
   outputs: Stack[];
   catalysts: Stack[];
+  category: string;
   id: number;
   props: Object;
 
@@ -22,6 +23,7 @@ export default class Recipe {
       inputs: this.inputs.map(input => input.serialize()),
       outputs: this.outputs.map(output => output.serialize()),
       catalysts: this.catalysts.map(catalyst => catalyst.serialize()),
+      category: this.category,
       id: this.id,
     }
   }
@@ -31,6 +33,7 @@ export default class Recipe {
     this.outputs = data.outputs.map(output => new Stack(['']).deserialize(output));
     this.catalysts = data.catalysts.map(catalyst => new Stack(['']).deserialize(catalyst));
     this.id = data.id;
+    this.category = data.category;
     this.props = {};
     return this;
   }

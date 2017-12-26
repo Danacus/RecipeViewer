@@ -4,8 +4,7 @@ import { INetworkAlgorithm } from "./INetworkAlgorithm";
 import Node from "../Node";
 import Edge from "../Edge";
 import Stack from '../Stack';
-import Recipes from '../../stores/Recipes';
-import Filter from "../Filter";
+import Recipes from '../../worker/PrimitiveRecipes';
 
 export default class AutoMerge implements INetworkAlgorithm {
   target: Stack;

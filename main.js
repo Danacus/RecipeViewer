@@ -5,8 +5,10 @@ const ipcMain = electron.ipcMain;
 
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
+const cp = require('child_process');
 
-var windows = {}
+var windows = {};
+var children = {};
 
 if (process.env.NODE_ENV === "development") {
   require('electron-debug')();
@@ -30,15 +32,12 @@ app.on('ready', function() {
 })
 
 ipcMain.on('start', (event, data) => {
-  const win = new BrowserWindow({
-		show: false
-	});
-
-  win.loadURL('file://' + __dirname + '/app/worker/index.html');
-  windows[win.webContents.id] = win;
-  win.webContents.on('did-finish-load', () => {
-    win.webContents.send(data.type, data);
-  })
+  var child = cp.fork(__dirname + '/output/worker-bundle.js');
+  child.send(data);
+  child.on('message', (data) => {
+    mainWindow.webContents.send(data.type, data);
+    child.kill();
+  });
 });
 
 ipcMain.on('response', (event, data) => {

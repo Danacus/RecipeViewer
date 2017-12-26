@@ -68,6 +68,7 @@ export default class Network {
 
   createNew() {
     this.setAlgorithm(0);
+    this.setTarget('minecraft:cake:0');
     this.setVisOptions({
       nodes: {
         shape: 'image'
@@ -132,15 +133,16 @@ export default class Network {
   generate(): Promise<any> {
     return new Promise((resolve, reject) => {
       this.isLoading = true;
-      let task = 'Generating network: ' + store.getCurrentProfile().nameMaps.titles[this.target.names[0]];
-      store.tasks.push(task);
+      let task = 'Generating network';
+      store.addTask(task);
 
       ipcRenderer.send('start', {
         type: 'algorithm',
         network: this.id,
         algorithm: this.algorithm,
         target: this.target.serialize(),
-        recipes: this.filteredRecipes.serialize(),
+        recipes: this.recipes.serialize(),
+        filter: this.filter.serialize(),
         limit: this.limit,
         depth: this.depth - 1
       })
@@ -149,8 +151,8 @@ export default class Network {
         if (data.network === this.id) {
           this.nodes = data.nodes.map(node => new Node(new Stack(['']), -1, -1, -1).deserialize(node));
           this.edges = data.edges.map(edge => new Edge(new Node(new Stack(['']), -1, -1, -1), new Node(new Stack(['']), -1, -1, -1), new Recipe([], [], [], -1), -1, -1).deserialize(edge));
-          store.tasks = store.tasks.filter(t => t != task);
-          store.tasks.push('vis.js: loading network');
+          store.removeTask(task);
+          store.addTask('vis.js: loading network');
           this.visReload();
           resolve();
         }
@@ -178,16 +180,10 @@ export default class Network {
     this.visNetwork = new vis.Network(container, {nodes: this.visNodes, edges: this.visEdges}, this.visOptions);
     this.visNetwork.on("afterDrawing", () => {
       this.isLoading = false;
-      store.tasks = store.tasks.filter(t => t != 'vis.js: loading network');
+      store.removeTask('vis.js: loading network');
     })
 
     this.seed = this.visNetwork.getSeed();
-  }
-
-  @action reloadFilter() {
-    this.filteredRecipes = new Recipes();
-    this.filteredRecipes.recipes = this.recipes.recipes.slice();
-    this.filteredRecipes.recipes = this.filteredRecipes.recipes.filter(recipe => this.filter.recipeFilter(recipe));
   }
 
   @action newSeed() {

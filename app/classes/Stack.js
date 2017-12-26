@@ -1,10 +1,8 @@
 // @flow
 
-import { observable } from "mobx";
-
 export default class Stack {
-  @observable names: string[];
-  @observable amount: number;
+  names: string[];
+  amount: number;
 
   constructor(names: string[], amount: number = 0) {
     this.names = names;

@@ -1,12 +1,11 @@
 // @flow
 
-import Recipe from "./Recipe";
-import Stack from "./Stack";
-import { observable, action } from "mobx";
-import FilterItem from "./FilterItem";
+import Recipe from "../classes/Recipe";
+import Stack from "../classes/Stack";
+import PrimitiveFilterItem from "./PrimitiveFilterItem";
 
-export default class Filter {
-  @observable lists: Array<FilterItem[]> = [
+export default class PrimitiveFilter {
+  lists: Array<PrimitiveFilterItem[]> = [
     [],
     [],
     [],
@@ -21,7 +20,7 @@ export default class Filter {
 
   deserialize(data: Object) {
     if (data.lists) {
-      this.lists = data.lists.map(list => list.map(item => new FilterItem('').deserialize(item)));
+      this.lists = data.lists.map(list => list.map(item => new PrimitiveFilterItem('').deserialize(item)));
     }
     return this;
   }
@@ -39,25 +38,6 @@ export default class Filter {
       default: 
         return 0;
     }
-  }
-
-  @action setList(list: number, newList: FilterItem[]) {
-    this.lists[list] = newList;
-  }
-
-  @action add(list: number, item: FilterItem) {
-    console.log(list)
-    this.lists[list].push(item);
-  }
-
-  @action remove(list: number, item: FilterItem) {
-    this.lists[list] = this.lists[list].filter(i => i.value != item.value);
-  }
-
-  @action toggleInverse(list: number, item: FilterItem) {
-    this.lists[list].filter(i => i.value == item.value).forEach(i => {
-      i.inverse = !i.inverse;
-    });
   }
 
   recipeFilter(recipe: Recipe): boolean {

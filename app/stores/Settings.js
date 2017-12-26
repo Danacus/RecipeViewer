@@ -9,10 +9,11 @@ import Recipes from './Recipes';
 const app = electron.remote.app;
 
 export default class Settings {
-  @observable profiles: Profile[];
+  profiles: Profile[];
   @observable selectedProfile: number;
   @observable isLoading: boolean = false;
-  @observable tasks: string[] = [];
+  tasksSet: Set<string> = new Set();
+  @observable tasks: Array<string> = [];
 
   @action loadSettings(): Promise<any> {
     this.isLoading = true;
@@ -35,12 +36,21 @@ export default class Settings {
         this.profiles = settings.profiles.map(profile => {
           return new Profile(profile.name, profile.path, new Networks().deserialize(profile.networks))
         })
-        this.selectProfile(settings.selectedProfile).then(() => {
-          this.isLoading = false;
-          resolve();
-        });
+        this.selectedProfile = settings.selectedProfile;
+        this.isLoading = false;
+        resolve();
       });
     });
+  }
+
+  @action addTask(task: string) {
+    this.tasksSet.add(task)
+    this.tasks = [...this.tasksSet];
+  }
+
+  @action removeTask(task: string) {
+    this.tasksSet.delete(task);
+    this.tasks = [...this.tasksSet];
   }
 
   @action setProfiles(profiles: Profile[]) {
@@ -53,7 +63,6 @@ export default class Settings {
 
   @action selectProfile(index: number) {
     this.isLoading = true;
-    this.tasks = this.tasks.filter(t => t != 'vis.js: loading network');
     return this.getProfile(index).initialize().then(() => {
       this.isLoading = false;
       this.selectedProfile = index; 
@@ -70,7 +79,8 @@ export default class Settings {
   }
 
   saveSettings() {
+    console.log('start saving');
     let file = app.getPath('userData') + "/settings.json";
-    return jetpack.writeAsync(file, {profiles: this.profiles.map(profile => ({name: profile.name, path: profile.path, networks: profile.networks.serialize()})), selectedProfile: this.selectedProfile});
+    return jetpack.writeAsync(file, {profiles: this.profiles.map(profile => ({name: profile.name, path: profile.path, networks: profile.networks.serialize()})), selectedProfile: this.selectedProfile}).then(console.log('end saving'));
   }
 }

@@ -10,7 +10,6 @@ import Recipe from '../classes/Recipe';
 import OptionField from './components/OptionField';
 import OptionSelect, { formItemLayout } from './components/OptionSelect';
 import ItemList from './components/ItemList';
-import EditableList from './components/EditableList';
 const SubMenu = Menu.SubMenu;
 const { Header, Content, Footer, Sider } = Layout;
 const Option = Select.Option;
@@ -22,10 +21,11 @@ import style from './style/NetworkView.css';
 import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
 import { observer } from 'mobx-react';
 import ItemSelect from './components/ItemSelect';
-import ModList from './components/ModList';
-import ModSelect from './components/ModSelect';
 import FilterList from './components/FilterList';
 import FilterItem from '../classes/FilterItem';
+import CategoryList from './components/CategoryList';
+import CategorySelect from './components/CategorySelect';
+import ModSelect from './components/ModSelect';
 
 type Props = {
   network: Network,
@@ -61,7 +61,7 @@ export default class NetworkView extends React.Component<Props, State> {
 
     this.state = {
       collapsed: false,
-      filterAdd: ['', '', ''],
+      filterAdd: ['', '', '', ''],
       selectedNode: null,
       selectedRecipes: [],
       blacklistInput: null,
@@ -88,17 +88,14 @@ export default class NetworkView extends React.Component<Props, State> {
 
   filterAdd(index: number, item: FilterItem) {
     this.props.network.filter.add(index, item);
-    this.props.network.reloadFilter();
   }
 
   filterRemove(index: number, item: FilterItem) {
     this.props.network.filter.remove(index, item);
-    this.props.network.reloadFilter();
   }
 
   toggleInverse(index: number, item: FilterItem) {
     this.props.network.filter.toggleInverse(index, item);
-    this.props.network.reloadFilter();
     this.setState({});
   }
 
@@ -155,14 +152,13 @@ export default class NetworkView extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.props.network.reloadFilter();
-    this.regenerate();
+    this.setState({});
   }
 
   render() {
     return (
       <Layout className='nv-layout'>
-        {this.props.network.isLoading || store.isLoading ? 
+        {this.props.network.isLoading ? 
           <div className='loading-div'>
             <div className='blur' />
             <div className='spin'>
@@ -182,7 +178,7 @@ export default class NetworkView extends React.Component<Props, State> {
           collapsedWidth={0}
           collapsed={this.props.network.collapsed}
           width={window.innerWidth / 4}
-          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0", zIndex: "30" }}
+          style={{background: '#fff', overflow: "auto", position: "fixed", right: "0", zIndex: "3" }}
         >
           <Collapse bordered={false} style={collapseStyle}>
             {/* 
@@ -286,6 +282,25 @@ export default class NetworkView extends React.Component<Props, State> {
                       onSearch={value => this.setFilterState(2, value)} 
                       onChange={value => this.setFilterState(2, value)} 
                       onSelect={value => this.filterAdd(2, new FilterItem(value))} 
+                    />
+                  </Form>
+                </Collapse.Panel>
+              </Collapse>
+              <Collapse bordered={false} style={collapseStyle}>
+                <Collapse.Panel header="Categories">    
+                  <Form>
+                    <CategoryList 
+                      onChange={item => this.toggleInverse(3, item)} 
+                      onRemove={item => this.filterRemove(3, item)} 
+                      items={this.props.network.filter.lists[3]} 
+                    />
+                    <CategorySelect 
+                      label="Add" 
+                      placeholder="Search a category" 
+                      value={this.state.filterAdd[3]} 
+                      onSearch={value => this.setFilterState(3, value)} 
+                      onChange={value => this.setFilterState(3, value)} 
+                      onSelect={value => this.filterAdd(3, new FilterItem(value))} 
                     />
                   </Form>
                 </Collapse.Panel>
