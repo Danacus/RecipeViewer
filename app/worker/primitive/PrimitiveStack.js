@@ -1,10 +1,8 @@
 // @flow
 
-import { observable } from "mobx";
-
-export default class Stack {
-  @observable names: string[];
-  @observable amount: number;
+export default class PrimitiveStack {
+  names: string[];
+  amount: number;
 
   constructor(names: string[], amount: number = 0) {
     this.names = names;
@@ -24,7 +22,7 @@ export default class Stack {
     return this;
   }
 
-  equals(stack: Stack): boolean {
+  equals(stack: PrimitiveStack): boolean {
     return this.names.some(name => stack.names.includes(name)) || stack.names.some(name => this.names.includes(name))
   }
 

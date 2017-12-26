@@ -12,7 +12,7 @@ import Networks from '../stores/Networks';
 import Network from '../classes/Network';
 import Stack from '../classes/Stack';
 import { store, appInstance } from '../App';
-import { NetworkAlgorithms } from '../classes/NetworkAlgorithm/NetworkAlgorithms';
+import { NetworkAlgorithms } from '../worker/NetworkAlgorithm/NetworkAlgorithms';
 import Settings from '../stores/Settings';
 import style from './style/HomePage.css';
 import uuidv4 from 'uuid/v4';

@@ -1,12 +1,12 @@
 // @flow
 
-import Recipe from "../classes/Recipe";
-import Stack from "../classes/Stack";
+import PrimitiveRecipe from "./PrimitiveRecipe";
+import PrimitiveStack from "./PrimitiveStack";
 
 
 //Thanks to the serialization, I can convert between Recipes and PrimitiveRecipes. Neat!
 export default class PrimitiveRecipes {
-  recipes: Recipe[] = [];
+  recipes: PrimitiveRecipe[] = [];
   categories: string[] = [];
 
   serialize(): Object {
@@ -17,24 +17,24 @@ export default class PrimitiveRecipes {
   }
 
   deserialize(data: Object) {
-    this.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
+    this.recipes = data.recipes.map(recipe => new PrimitiveRecipe([], [], [], -1).deserialize(recipe));
     this.categories = data.categories;
     return this;
   }
 
-  getRecipesWithOutput(output: Stack): Recipe[] {
+  getRecipesWithOutput(output: PrimitiveStack): PrimitiveRecipe[] {
     return this.recipes.filter(recipe => recipe.outputs.some(recipeOutput => recipeOutput.equals(output)));
   }
 
-  getRecipesWithInput(input: Stack): Recipe[] {
+  getRecipesWithInput(input: PrimitiveStack): PrimitiveRecipe[] {
     return this.recipes.filter(recipe => recipe.inputs.some(recipeInput => recipeInput.equals(input)));
   }
 
-  getRecipesWithOutputs(outputs: Stack[]): Recipe[] {
+  getRecipesWithOutputs(outputs: PrimitiveStack[]): PrimitiveRecipe[] {
     return this.recipes.filter(recipe => recipe.outputs.some(recipeOutput => outputs.some(output => recipeOutput.equals(output))));
   }
 
-  getRecipesWithInputs(inputs: Stack[]): Recipe[] {
+  getRecipesWithInputs(inputs: PrimitiveStack[]): PrimitiveRecipe[] {
     return this.recipes.filter(recipe => recipe.outputs.some(recipeInput => inputs.some(input => recipeInput.equals(input))));
   }
 }

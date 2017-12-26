@@ -1,6 +1,6 @@
 // @flow
 
-import Stack from "../classes/Stack";
+import PrimitiveStack from "./PrimitiveStack";
 
 export default class PrimitiveFilterItem {
   value: string;
@@ -15,11 +15,11 @@ export default class PrimitiveFilterItem {
     return this.inverse ? this.value != item : this.value == item;
   }
 
-  testStack(item: Stack): boolean {
+  testStack(item: PrimitiveStack): boolean {
     return (item.names.some(name => this.test(name)) && !item.names.every(name => !this.test(name))) || item.names.length == 0;
   }
 
-  testStacks(items: Stack[]): boolean {
+  testStacks(items: PrimitiveStack[]): boolean {
     return (items.every(stack => this.testStack(stack)) && !items.every(stack => !this.testStack(stack)));
   }
 

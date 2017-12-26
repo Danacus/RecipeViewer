@@ -1,18 +1,18 @@
 // @flow
 
-import Stack from "./Stack";
+import PrimitiveStack from "./PrimitiveStack";
 
-export default class Node {
-  stack: Stack;
-  children: Node[];
-  parents: Node[];
+export default class PrimitiveNode {
+  stack: PrimitiveStack;
+  children: PrimitiveNode[];
+  parents: PrimitiveNode[];
   id: number;
   image: string;
   amount: number;
   group: number;
   props: Object;
 
-  constructor(stack: Stack, id: number, amount: number = 0, group: number = 0) {
+  constructor(stack: PrimitiveStack, id: number, amount: number = 0, group: number = 0) {
     this.parents = [];
     this.children = [];
     this.stack = stack;
@@ -34,7 +34,7 @@ export default class Node {
   }
 
   deserialize(data: Object) {
-    this.stack = new Stack(['']).deserialize(data.stack);
+    this.stack = new PrimitiveStack(['']).deserialize(data.stack);
     this.id = data.id;
     this.image = data.image;
     this.amount = data.amount;
@@ -42,19 +42,19 @@ export default class Node {
     return this;
   }
 
-  getChildren(): Node[] {
+  getChildren(): PrimitiveNode[] {
     return this.children;
   }
 
-  getParents(): Node[] {
+  getParents(): PrimitiveNode[] {
     return this.parents;
   }
 
-  addChild(child: Node) {
+  addChild(child: PrimitiveNode) {
     this.children.push(child);
   }
 
-  addParent(parent: Node) {
+  addParent(parent: PrimitiveNode) {
     this.parents.push(parent);
   }
 

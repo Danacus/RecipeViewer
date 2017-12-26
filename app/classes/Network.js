@@ -3,11 +3,11 @@
 import {observable, action, computed, toJS} from 'mobx';
 import Stack from './Stack';
 import uuidv4 from 'uuid/v4';
-import { INetworkAlgorithm } from './NetworkAlgorithm/INetworkAlgorithm';
+import { INetworkAlgorithm } from '../worker/NetworkAlgorithm/INetworkAlgorithm';
 import Node from './Node';
 import vis from 'vis';
 import Recipes from '../stores/Recipes';
-import { NetworkAlgorithms } from './NetworkAlgorithm/NetworkAlgorithms';
+import { NetworkAlgorithms } from '../worker/NetworkAlgorithm/NetworkAlgorithms';
 import Edge from './Edge';
 import Filter from './Filter';
 import { store } from '../App';

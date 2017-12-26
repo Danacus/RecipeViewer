@@ -1,10 +1,12 @@
+// @flow
+
 import jetpack from "fs-jetpack";
-import Recipe from "../classes/Recipe";
-import Stack from "../classes/Stack";
+import PrimitiveRecipe from "./primitive/PrimitiveRecipe";
+import PrimitiveStack from "./primitive/PrimitiveStack";
 
 export default class RecipeLoader {
   paths: string[];
-  recipes: Recipe[];
+  recipes: PrimitiveRecipe[];
   categories: string[];
 
   constructor(paths: string[]) {
@@ -17,7 +19,7 @@ export default class RecipeLoader {
     return Promise.all(this.paths.map(path => this.readRecipeFile(path)))
   }
 
-  readRecipeFile(path): Promise<any> {
+  readRecipeFile(path: string): Promise<any> {
     return new Promise((resolve, reject) => {
       jetpack.readAsync(path, 'json').then(file => {
         this.recipes = this.recipes.concat(this.loadRecipeFile(file));
@@ -27,12 +29,12 @@ export default class RecipeLoader {
   }
 
   loadRecipeFile(file: Object) {
-    let recipes: Recipe[] = [];
+    let recipes: PrimitiveRecipe[] = [];
     file.recipes.forEach((recipe, i) => {
-      let recipeObj = new Recipe(
-        recipe.input.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
-        recipe.output.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
-        file.catalysts.map(catalyst => new Stack([catalyst])),
+      let recipeObj = new PrimitiveRecipe(
+        recipe.input.items.map(item => new PrimitiveStack(item.stacks.map(stack => stack.name), item.amount)),
+        recipe.output.items.map(item => new PrimitiveStack(item.stacks.map(stack => stack.name), item.amount)),
+        file.catalysts.map(catalyst => new PrimitiveStack([catalyst])),
         i
       );
       recipeObj.category = file.title;
@@ -53,8 +55,8 @@ export default class RecipeLoader {
   }
 }
 
-const reduceStacks = (stacks: Stack[]) => {
-  return stacks.reduce((total: Array<Stack>, current: Stack) => {
+const reduceStacks = (stacks: PrimitiveStack[]) => {
+  return stacks.reduce((total: Array<PrimitiveStack>, current: PrimitiveStack) => {
     let other = total.find(stack => stack.equals(current));
   
     if (!other) {

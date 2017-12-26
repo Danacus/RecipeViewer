@@ -1,7 +1,7 @@
 // @flow
 
-import Recipe from "../classes/Recipe";
-import Stack from "../classes/Stack";
+import PrimitiveRecipe from "./PrimitiveRecipe";
+import PrimitiveStack from "./PrimitiveStack";
 import PrimitiveFilterItem from "./PrimitiveFilterItem";
 
 export default class PrimitiveFilter {
@@ -40,7 +40,7 @@ export default class PrimitiveFilter {
     }
   }
 
-  recipeFilter(recipe: Recipe): boolean {
+  recipeFilter(recipe: PrimitiveRecipe): boolean {
     return recipe.catalysts.some(cat => this.itemMatch(1, cat) && this.modMatch(cat))
     // And every input matches the filter
     && recipe.inputs.every(input => this.stackFilter(input))
@@ -52,11 +52,11 @@ export default class PrimitiveFilter {
     && !this.lists[3].filter(i => i.inverse).some(listed => listed.value == recipe.category)
   }
 
-  stackFilter(stack: Stack): boolean {
+  stackFilter(stack: PrimitiveStack): boolean {
     return this.itemMatch(0, stack) && this.modMatch(stack);
   }
 
-  itemMatch(index: number, stack: Stack): boolean {
+  itemMatch(index: number, stack: PrimitiveStack): boolean {
     return ((
       // The stack is explicitly whitelisted or the whitelist is empty
       (stack.names.some(name => this.lists[index].filter(i => !i.inverse).some(listed => listed.value == name)) || this.lists[index].filter(i => !i.inverse).length == 0)
@@ -65,7 +65,7 @@ export default class PrimitiveFilter {
     ) || this.lists[index].length == 0);
   }
 
-  modMatch(stack: Stack): boolean {
+  modMatch(stack: PrimitiveStack): boolean {
     return ((
       // And one of the mods of the stack is whitelisted or the whitelist is empty
       (stack.getMods().some(mod => this.lists[2].filter(i => !i.inverse).some(listed => listed.value == mod)) || this.lists[2].filter(i => !i.inverse).length == 0)

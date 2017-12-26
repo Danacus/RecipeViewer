@@ -1,11 +1,11 @@
 // @flow
 
 import RecipeLoader from "./RecipeLoader";
-import { NetworkAlgorithms } from "../classes/NetworkAlgorithm/NetworkAlgorithms";
-import Stack from "../classes/Stack";
-import PrimitiveRecipes from "./PrimitiveRecipes";
+import { NetworkAlgorithms } from "./NetworkAlgorithm/NetworkAlgorithms";
+import PrimitiveRecipes from "./primitive/PrimitiveRecipes";
 import process from 'process';
-import PrimitiveFilter from "./PrimitiveFilter";
+import PrimitiveFilter from "./primitive/PrimitiveFilter";
+import PrimitiveStack from "./primitive/PrimitiveStack";
 
 process.on('message', (data) => {
   switch (data.type) {
@@ -20,7 +20,7 @@ process.on('message', (data) => {
       let filteredRecipes = new PrimitiveRecipes();
       filteredRecipes.recipes = new PrimitiveRecipes().deserialize(data.recipes).recipes.slice();
       filteredRecipes.recipes = filteredRecipes.recipes.filter(recipe => new PrimitiveFilter().deserialize(data.filter).recipeFilter(recipe));
-      algorithm.target = new Stack(['']).deserialize(data.target);
+      algorithm.target = new PrimitiveStack(['']).deserialize(data.target);
       algorithm.recipes = filteredRecipes;
       algorithm.limit = data.limit;
       algorithm.depth = data.depth;

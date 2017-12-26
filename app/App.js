@@ -14,7 +14,6 @@ import SettingsPage from './views/SettingsPage';
 import Network from './classes/Network';
 import Stack from './classes/Stack';
 import Settings from './stores/Settings';
-import DefaultAlgorithm from './classes/NetworkAlgorithm/DefaultAlgorithm';
 import { withRouter } from "react-router";
 import NameMaps from "./stores/NameMaps";
 import { networkViewInstance } from "./views/NetworkView";
