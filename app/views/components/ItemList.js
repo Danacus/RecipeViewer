@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import { List, Avatar, Icon } from 'antd';
-import Stack from '../../classes/Stack';
+import Stack from '../../api/Stack';
 import { store } from '../../App';
 
 type Props = {
@@ -25,7 +25,7 @@ export default class ItemList extends Component<Props> {
               avatar={<Avatar src={
                 `file://${store.getCurrentProfile().path}/config/jeiexporter/items/${item.names[0].replace(/:/g, "_")}.png`
               } />}
-              title={item.amount > 0 ? item.amount + ' x ' + store.getCurrentProfile().nameMaps.list[item.names[0]] : store.getCurrentProfile().nameMaps.list[item.names[0]]}
+              title={item.amount > 0 ? item.amount + ' x ' + store.getCurrentProfile().nameMaps.titles[item.names[0]] : store.getCurrentProfile().nameMaps.titles[item.names[0]]}
               description={item.names[0]}
               />
             </List.Item>

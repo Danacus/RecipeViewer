@@ -5,15 +5,15 @@ import { Link } from 'react-router-dom';
 import { Layout, Steps, Input, Row, Col, Button, Icon, Spin } from 'antd';
 const Step = Steps.Step;
 import { appInstance } from '../App';
-import Settings from '../stores/Settings';
+import Settings from '../observables/Settings';
 import style from './style/CreateProfilePage.css';
 import jetpack from 'fs-jetpack';
 import electron from 'electron';
-import Networks from '../stores/Networks';
+import Networks from '../observables/Networks';
 const app = electron.remote.app;
 import { observer } from 'mobx-react';
 import { store } from '../App';
-import Profile from '../classes/Profile';
+import Profile from '../observables/Profile';
 
 type Props = {
   onReady: Function;

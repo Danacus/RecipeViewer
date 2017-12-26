@@ -1,8 +1,9 @@
 // @flow
 
-import PrimitiveStack from "./PrimitiveStack";
+import { observable, action } from "mobx";
+import Stack from "./Stack";
 
-export default class PrimitiveFilterItem {
+export default class FilterItem {
   value: string;
   inverse: boolean;
 
@@ -15,11 +16,11 @@ export default class PrimitiveFilterItem {
     return this.inverse ? this.value != item : this.value == item;
   }
 
-  testStack(item: PrimitiveStack): boolean {
+  testStack(item: Stack): boolean {
     return (item.names.some(name => this.test(name)) && !item.names.every(name => !this.test(name))) || item.names.length == 0;
   }
 
-  testStacks(items: PrimitiveStack[]): boolean {
+  testStacks(items: Stack[]): boolean {
     return (items.every(stack => this.testStack(stack)) && !items.every(stack => !this.testStack(stack)));
   }
 

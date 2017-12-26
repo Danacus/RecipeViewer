@@ -1,11 +1,11 @@
 // @flow
 
-import PrimitiveStack from "../primitive/PrimitiveStack";
-import PrimitiveRecipes from "../primitive/PrimitiveRecipes";
+import Stack from "../../api/Stack";
+import Recipes from "../../api/Recipes";
 
 export interface INetworkAlgorithm {
-  target: PrimitiveStack;
-  recipes: PrimitiveRecipes;
+  target: Stack;
+  recipes: Recipes;
   limit: number;
   depth: number;
   counter: number;

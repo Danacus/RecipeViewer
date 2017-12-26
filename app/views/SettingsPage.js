@@ -4,7 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Layout, Steps, Icon, Form } from 'antd';
 const Step = Steps.Step;
-import Settings from '../stores/Settings';
+import Settings from '../observables/Settings';
 import OptionField from './components/OptionField';
 import { observer } from 'mobx-react';
 import { store } from '../App';

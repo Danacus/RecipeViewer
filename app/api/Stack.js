@@ -1,6 +1,6 @@
 // @flow
 
-export default class PrimitiveStack {
+export default class Stack {
   names: string[];
   amount: number;
 
@@ -22,7 +22,7 @@ export default class PrimitiveStack {
     return this;
   }
 
-  equals(stack: PrimitiveStack): boolean {
+  equals(stack: Stack): boolean {
     return this.names.some(name => stack.names.includes(name)) || stack.names.some(name => this.names.includes(name))
   }
 

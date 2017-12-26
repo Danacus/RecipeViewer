@@ -1,13 +1,13 @@
-import Recipes from "../stores/Recipes";
-import Networks from "../stores/Networks";
-import NameMaps from "../stores/NameMaps";
-import { action, observable } from "mobx";
+import Networks from "../observables/Networks";
+import NameMaps from "../observables/NameMaps";
+import { observable } from "mobx";
+import RecipeStore from "./RecipeStore";
 
 export default class Profile {
   @observable name: string;
   @observable path: string;
-  @observable networks: Networks;
-  recipes: Recipes;
+  @observable.shallow networks: Networks;
+  recipes: RecipeStore;
   nameMaps: NameMaps;
   @observable isLoaded: boolean;
 
@@ -15,12 +15,12 @@ export default class Profile {
     this.name = name;
     this.path = path;
     this.networks = networks;
-    this.recipes = new Recipes();
+    this.recipes = new RecipeStore();
     this.nameMaps = new NameMaps();
     this.isLoaded = false;
   }
 
-  @action initialize() {
+  initialize() {
     if (this.isLoaded) {
       return new Promise(resolve => resolve());
     } else {
@@ -28,7 +28,7 @@ export default class Profile {
     } 
   }
 
-  @action reload() {
+  reload() {
     return this.recipes.loadRecipes(this.path).then(() => 
       this.nameMaps.loadAll(this)
     ).then(() => {

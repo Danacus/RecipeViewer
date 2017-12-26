@@ -1,49 +1,16 @@
 // @flow
 
 import { observable, computed } from "mobx";
-import Recipe from "../classes/Recipe";
-import Stack from "../classes/Stack";
+import Recipe from "../api/Recipe";
+import Stack from "../api/Stack";
 import jetpack from 'fs-jetpack';
 import { ipcRenderer } from "electron";
 import os from 'os';
 import { store } from "../App";
+import Recipes from "../api/Recipes";
 
-export default class Recipes {
-  @observable recipes: Recipe[] = [];
+export default class RecipeStore extends Recipes {
   @observable categories: string[] = [];
-
-  @computed get list(): Recipe[] {
-    return this.recipes;
-  }
-
-  serialize(): Object {
-    return {
-      recipes: this.recipes.map(recipe => recipe.serialize()),
-      categories: this.categories
-    }
-  }
-
-  deserialize(data: Object) {
-    this.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
-    this.categories = data.categories;
-    return this;
-  }
-
-  getRecipesWithOutput(output: Stack): Recipe[] {
-    return this.recipes.filter(recipe => recipe.outputs.some(recipeOutput => recipeOutput.equals(output)));
-  }
-
-  getRecipesWithInput(input: Stack): Recipe[] {
-    return this.recipes.filter(recipe => recipe.inputs.some(recipeInput => recipeInput.equals(input)));
-  }
-
-  getRecipesWithOutputs(outputs: Stack[]): Recipe[] {
-    return this.recipes.filter(recipe => recipe.outputs.some(recipeOutput => outputs.some(output => recipeOutput.equals(output))));
-  }
-
-  getRecipesWithInputs(inputs: Stack[]): Recipe[] {
-    return this.recipes.filter(recipe => recipe.outputs.some(recipeInput => inputs.some(input => recipeInput.equals(input))));
-  }
 
   loadRecipes(gamePath: string): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -86,5 +53,9 @@ export default class Recipes {
         })
       })
     })
+  }
+
+  getRecipesWithOutput(output: Stack): Recipe[] {
+    return super.getRecipesWithOutput(output);
   }
 }

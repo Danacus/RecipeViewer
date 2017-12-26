@@ -1,18 +1,20 @@
 // @flow
 
-import {observable, action, computed, toJS} from 'mobx';
-import Stack from './Stack';
+import Stack from '../api/Stack';
 import uuidv4 from 'uuid/v4';
 import { INetworkAlgorithm } from '../worker/NetworkAlgorithm/INetworkAlgorithm';
-import Node from './Node';
+import Node from '../api/Node';
 import vis from 'vis';
-import Recipes from '../stores/Recipes';
+import Recipes from '../api/Recipes';
 import { NetworkAlgorithms } from '../worker/NetworkAlgorithm/NetworkAlgorithms';
-import Edge from './Edge';
-import Filter from './Filter';
+import Edge from '../api/Edge';
+import Filter from '../api/Filter';
 import { store } from '../App';
-import Recipe from './Recipe';
+import Recipe from '../api/Recipe';
 import { ipcRenderer } from 'electron';
+import { observable, action, computed } from 'mobx';
+import { extendObservable } from 'mobx';
+import FilterItem from '../api/FilterItem';
 
 export const NetworkLayouts = [
   {
@@ -51,12 +53,16 @@ export default class Network {
   visNetwork: vis.Network;
   @observable limit: number;
   @observable depth: number;
-  @observable seed: ?number;
+  seed: ?number;
   @observable selectedLayout: number;
   @observable collapsed: boolean;
 
   constructor() {
-    this.target = new Stack([''])
+    let target = new Stack(['']);
+    this.target = extendObservable(target, {
+      names: target.names,
+      amount: target.amount
+    });
     this.id = uuidv4();
     this.filter = new Filter();
     this.limit = 100;
@@ -128,7 +134,7 @@ export default class Network {
     this.visOptions = visOptions;
   }
 
-  @action generate(): Promise<any> {
+  generate(): Promise<any> {
     return new Promise((resolve, reject) => {
       let task = 'Generating network';
       store.addTask(task);
@@ -183,16 +189,24 @@ export default class Network {
     this.seed = this.visNetwork.getSeed();
   }
 
-  @action newSeed() {
+  newSeed() {
     this.seed = undefined;
   }
 
-  @action newId() {
+  newId() {
     this.id = uuidv4();
   }
 
-  @action setRecipes(recipes: Recipes) {
+  setRecipes(recipes: Recipes) {
     this.recipes = recipes;
+  }
+
+  @action filterAdd(list: number, item: FilterItem) {
+    this.filter.lists[list].push(item);
+  }
+
+  @action filterRemove(list: number, item: FilterItem) {
+    this.filter.lists[list] = this.filter.lists[list].filter(i => i.value != item.value);
   }
 
   @action setAlgorithm(algorithm: number) {
@@ -211,8 +225,12 @@ export default class Network {
     }
   }
 
-  @action setTarget(target: string) {
-    this.target = new Stack([target]);
+  @action setTarget(t: string) {
+    let target = new Stack([t]);
+    this.target = extendObservable(target, {
+      names: target.names,
+      amount: target.amount
+    });
   }
 
   @action setLimit(limit: number) {

@@ -2,8 +2,8 @@
 
 import React, { Component } from 'react';
 import { List, Avatar, Icon, Switch, Tooltip } from 'antd';
-import Stack from '../../classes/Stack';
-import FilterItem from '../../classes/FilterItem';
+import Stack from '../../api/Stack';
+import FilterItem from '../../api/FilterItem';
 
 type Props = {
   items: Array<FilterItem>,

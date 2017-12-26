@@ -29,7 +29,7 @@ export default class ItemSelect extends Component<Props> {
         onChange={value => this.props.onChange(value)}
         onSelect={value => this.props.onSelect(value)}
       >
-        {Object.entries(store.getCurrentProfile().nameMaps.titles)
+        {Object.entries(store.getCurrentProfile().nameMaps.filteredTitles)
           .filter(item => 
             this.props.value.toLowerCase().replace('@', '').split(' ').every(input => 
               item[0].includes(input) || (typeof item[1] == 'string' ? item[1] : '').toLowerCase().includes(input)

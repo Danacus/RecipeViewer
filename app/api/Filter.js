@@ -1,11 +1,11 @@
 // @flow
 
-import PrimitiveRecipe from "./PrimitiveRecipe";
-import PrimitiveStack from "./PrimitiveStack";
-import PrimitiveFilterItem from "./PrimitiveFilterItem";
+import Recipe from "./Recipe";
+import Stack from "./Stack";
+import FilterItem from "./FilterItem";
 
-export default class PrimitiveFilter {
-  lists: Array<PrimitiveFilterItem[]> = [
+export default class Filter {
+  lists: Array<FilterItem[]> = [
     [],
     [],
     [],
@@ -20,7 +20,7 @@ export default class PrimitiveFilter {
 
   deserialize(data: Object) {
     if (data.lists) {
-      this.lists = data.lists.map(list => list.map(item => new PrimitiveFilterItem('').deserialize(item)));
+      this.lists = data.lists.map(list => list.map(item => new FilterItem('').deserialize(item)));
     }
     return this;
   }
@@ -40,7 +40,17 @@ export default class PrimitiveFilter {
     }
   }
 
-  recipeFilter(recipe: PrimitiveRecipe): boolean {
+  setList(list: number, newList: FilterItem[]) {
+    this.lists[list] = newList;
+  }
+
+  toggleInverse(list: number, item: FilterItem) {
+    this.lists[list].filter(i => i.value == item.value).forEach(i => {
+      i.inverse = !i.inverse;
+    });
+  }
+
+  recipeFilter(recipe: Recipe): boolean {
     return recipe.catalysts.some(cat => this.itemMatch(1, cat) && this.modMatch(cat))
     // And every input matches the filter
     && recipe.inputs.every(input => this.stackFilter(input))
@@ -52,11 +62,11 @@ export default class PrimitiveFilter {
     && !this.lists[3].filter(i => i.inverse).some(listed => listed.value == recipe.category)
   }
 
-  stackFilter(stack: PrimitiveStack): boolean {
+  stackFilter(stack: Stack): boolean {
     return this.itemMatch(0, stack) && this.modMatch(stack);
   }
 
-  itemMatch(index: number, stack: PrimitiveStack): boolean {
+  itemMatch(index: number, stack: Stack): boolean {
     return ((
       // The stack is explicitly whitelisted or the whitelist is empty
       (stack.names.some(name => this.lists[index].filter(i => !i.inverse).some(listed => listed.value == name)) || this.lists[index].filter(i => !i.inverse).length == 0)
@@ -65,7 +75,7 @@ export default class PrimitiveFilter {
     ) || this.lists[index].length == 0);
   }
 
-  modMatch(stack: PrimitiveStack): boolean {
+  modMatch(stack: Stack): boolean {
     return ((
       // And one of the mods of the stack is whitelisted or the whitelist is empty
       (stack.getMods().some(mod => this.lists[2].filter(i => !i.inverse).some(listed => listed.value == mod)) || this.lists[2].filter(i => !i.inverse).length == 0)

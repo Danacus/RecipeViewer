@@ -8,17 +8,17 @@ const TabPane = Tabs.TabPane;
 const Option = Select.Option;
 
 import NetworkView from './NetworkView';
-import Networks from '../stores/Networks';
-import Network from '../classes/Network';
-import Stack from '../classes/Stack';
+import Networks from '../observables/Networks';
+import Network from '../observables/Network';
+import Stack from '../api/Stack';
 import { store, appInstance } from '../App';
 import { NetworkAlgorithms } from '../worker/NetworkAlgorithm/NetworkAlgorithms';
-import Settings from '../stores/Settings';
+import Settings from '../observables/Settings';
 import style from './style/HomePage.css';
 import uuidv4 from 'uuid/v4';
 import OptionField from './components/OptionField';
 import CreateProfilePage, { createProfileInstance } from './CreateProfilePage';
-import Profile from '../classes/Profile';
+import Profile from '../observables/Profile';
 
 type Props = {
 }
@@ -180,7 +180,7 @@ class HomePage extends Component<Props, State> {
               >
                 {store.getCurrentProfile() ? store.getCurrentProfile().isLoaded ? store.getCurrentProfile().networks.list.map((network, index) => 
                   <TabPane 
-                    tab={store.getCurrentProfile().nameMaps.list[network.getTarget] ? store.getCurrentProfile().nameMaps.list[network.getTarget] : network.getTarget} 
+                    tab={store.getCurrentProfile().nameMaps.titles[network.getTarget] ? store.getCurrentProfile().nameMaps.titles[network.getTarget] : network.getTarget} 
                     key={network.id}
                   >
                     <NetworkView addNetwork={this.add.bind(this)} network={network} updateParent={() => this.update()} />

@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { Layout, Menu, Collapse, Input, Button, Select, Card, Avatar, Form, Tabs, Checkbox, Spin } from 'antd';
-import Network, { NetworkLayouts } from '../classes/Network';
-import Node from '../classes/Node';
-import Stack from '../classes/Stack';
+import Network, { NetworkLayouts } from '../observables/Network';
+import Node from '../api/Node';
+import Stack from '../api/Stack';
 import { store } from '../App';
-import Recipe from '../classes/Recipe';
+import Recipe from '../api/Recipe';
 import OptionField from './components/OptionField';
 import OptionSelect, { formItemLayout } from './components/OptionSelect';
 import ItemList from './components/ItemList';
@@ -22,7 +22,7 @@ import { NetworkAlgorithms } from '../worker/NetworkAlgorithm/NetworkAlgorithms'
 import { observer } from 'mobx-react';
 import ItemSelect from './components/ItemSelect';
 import FilterList from './components/FilterList';
-import FilterItem from '../classes/FilterItem';
+import FilterItem from '../api/FilterItem';
 import CategoryList from './components/CategoryList';
 import CategorySelect from './components/CategorySelect';
 import ModSelect from './components/ModSelect';
@@ -87,11 +87,11 @@ export default class NetworkView extends React.Component<Props, State> {
   }
 
   filterAdd(index: number, item: FilterItem) {
-    this.props.network.filter.add(index, item);
+    this.props.network.filterAdd(index, item);
   }
 
   filterRemove(index: number, item: FilterItem) {
-    this.props.network.filter.remove(index, item);
+    this.props.network.filterRemove(index, item);
   }
 
   toggleInverse(index: number, item: FilterItem) {
@@ -219,7 +219,7 @@ export default class NetworkView extends React.Component<Props, State> {
                 <Collapse.Panel header="Items">    
                   <Form>
                     <FilterList 
-                      nameMap={store.getCurrentProfile().nameMaps.titles} 
+                      nameMap={store.getCurrentProfile().nameMaps.filteredTitles} 
                       onChange={item => this.toggleInverse(0, item)} 
                       onRemove={item => this.filterRemove(0, item)} 
                       items={this.props.network.filter.lists[0]} 
@@ -239,7 +239,7 @@ export default class NetworkView extends React.Component<Props, State> {
                 <Collapse.Panel header="Catalysts">    
                   <Form>
                     <FilterList 
-                      nameMap={store.getCurrentProfile().nameMaps.titles} 
+                      nameMap={store.getCurrentProfile().nameMaps.filteredTitles} 
                       onChange={item => this.toggleInverse(1, item)} 
                       onRemove={item => this.filterRemove(1, item)} 
                       items={this.props.network.filter.lists[1]} 

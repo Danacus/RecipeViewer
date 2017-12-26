@@ -1,12 +1,12 @@
 // @flow
 
 import jetpack from "fs-jetpack";
-import PrimitiveRecipe from "./primitive/PrimitiveRecipe";
-import PrimitiveStack from "./primitive/PrimitiveStack";
+import Recipe from "../api/Recipe";
+import Stack from "../api/Stack";
 
 export default class RecipeLoader {
   paths: string[];
-  recipes: PrimitiveRecipe[];
+  recipes: Recipe[];
   categories: string[];
 
   constructor(paths: string[]) {
@@ -29,12 +29,12 @@ export default class RecipeLoader {
   }
 
   loadRecipeFile(file: Object) {
-    let recipes: PrimitiveRecipe[] = [];
+    let recipes: Recipe[] = [];
     file.recipes.forEach((recipe, i) => {
-      let recipeObj = new PrimitiveRecipe(
-        recipe.input.items.map(item => new PrimitiveStack(item.stacks.map(stack => stack.name), item.amount)),
-        recipe.output.items.map(item => new PrimitiveStack(item.stacks.map(stack => stack.name), item.amount)),
-        file.catalysts.map(catalyst => new PrimitiveStack([catalyst])),
+      let recipeObj = new Recipe(
+        recipe.input.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
+        recipe.output.items.map(item => new Stack(item.stacks.map(stack => stack.name), item.amount)),
+        file.catalysts.map(catalyst => new Stack([catalyst])),
         i
       );
       recipeObj.category = file.title;
@@ -55,8 +55,8 @@ export default class RecipeLoader {
   }
 }
 
-const reduceStacks = (stacks: PrimitiveStack[]) => {
-  return stacks.reduce((total: Array<PrimitiveStack>, current: PrimitiveStack) => {
+const reduceStacks = (stacks: Stack[]) => {
+  return stacks.reduce((total: Array<Stack>, current: Stack) => {
     let other = total.find(stack => stack.equals(current));
   
     if (!other) {

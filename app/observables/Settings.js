@@ -4,12 +4,11 @@ import jetpack from 'fs-jetpack';
 import electron from 'electron';
 import Networks from "./Networks";
 import { observable, computed, action } from 'mobx';
-import Profile from '../classes/Profile';
-import Recipes from './Recipes';
+import Profile from '../observables/Profile';
 const app = electron.remote.app;
 
 export default class Settings {
-  profiles: Profile[];
+  @observable.shallow profiles: Profile[];
   @observable selectedProfile: number;
   @observable isLoading: boolean = false;
   tasksSet: Set<string> = new Set();
