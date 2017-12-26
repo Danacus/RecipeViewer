@@ -146,6 +146,7 @@ class HomePage extends Component<Props, State> {
 
   componentDidMount() {
     if (store.profiles.length == 0) {
+      store.addProfile(new Profile('', '', new Networks()));
       this.setState({addProfile: true});
     }
   }
@@ -153,7 +154,7 @@ class HomePage extends Component<Props, State> {
   render() {
     return (
       <div>
-        {store.isLoading ? 
+        {store.tasks.length > 0 ? 
           <div className='loading-div'>
             <div className='blur' />
             <div className='spin'>

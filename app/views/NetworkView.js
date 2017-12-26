@@ -158,17 +158,6 @@ export default class NetworkView extends React.Component<Props, State> {
   render() {
     return (
       <Layout className='nv-layout'>
-        {this.props.network.isLoading ? 
-          <div className='loading-div'>
-            <div className='blur' />
-            <div className='spin'>
-              <Spin size='large' /><br />
-              {store.tasks.map((task, i) => 
-                <span key={i}>{task}<br /></span>
-              )}
-            </div>
-          </div> 
-        : <p></p>}
         <Content style={{height:"calc(100vh - 50px)", background: '#fff'}} id={this.props.network.id}>
           
         </Content>

@@ -54,7 +54,6 @@ export default class Network {
   @observable seed: ?number;
   @observable selectedLayout: number;
   @observable collapsed: boolean;
-  @observable isLoading: boolean;
 
   constructor() {
     this.target = new Stack([''])
@@ -63,7 +62,6 @@ export default class Network {
     this.limit = 100;
     this.depth = 3;
     this.algorithm = 0;
-    this.isLoading = false;
   }
 
   createNew() {
@@ -130,9 +128,8 @@ export default class Network {
     this.visOptions = visOptions;
   }
 
-  generate(): Promise<any> {
+  @action generate(): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.isLoading = true;
       let task = 'Generating network';
       store.addTask(task);
 
@@ -179,7 +176,6 @@ export default class Network {
     let container = document.getElementById(this.id);
     this.visNetwork = new vis.Network(container, {nodes: this.visNodes, edges: this.visEdges}, this.visOptions);
     this.visNetwork.on("afterDrawing", () => {
-      this.isLoading = false;
       store.removeTask('vis.js: loading network');
     })
 
