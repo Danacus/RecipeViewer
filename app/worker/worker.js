@@ -27,7 +27,7 @@ process.on('message', (data) => {
       let filteredRecipes = new Recipes();
       filteredRecipes.recipes = new Recipes().deserialize(data.recipes).recipes.slice();
       filteredRecipes.recipes = filteredRecipes.recipes.filter(recipe => new Filter().deserialize(data.filter).recipeFilter(recipe));
-      algorithm.target = new Stack(['']).deserialize(data.target);
+      algorithm.target = new Stack().deserialize(data.target);
       algorithm.recipes = filteredRecipes;
       algorithm.limit = data.limit;
       algorithm.depth = data.depth;

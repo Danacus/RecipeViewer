@@ -10,7 +10,7 @@ export default class Recipe {
   id: number;
   props: Object;
 
-  constructor(inputs: Stack[], outputs: Stack[], catalysts: Stack[], id: number) {
+  constructor(inputs: Stack[] = [], outputs: Stack[] = [], catalysts: Stack[] = [], id: number = -1) {
     this.inputs = inputs;
     this.outputs = outputs;
     this.catalysts = catalysts;
@@ -29,9 +29,9 @@ export default class Recipe {
   }
 
   deserialize(data: Object) {
-    this.inputs = data.inputs.map(input => new Stack(['']).deserialize(input));
-    this.outputs = data.outputs.map(output => new Stack(['']).deserialize(output));
-    this.catalysts = data.catalysts.map(catalyst => new Stack(['']).deserialize(catalyst));
+    this.inputs = data.inputs.map(input => new Stack().deserialize(input));
+    this.outputs = data.outputs.map(output => new Stack().deserialize(output));
+    this.catalysts = data.catalysts.map(catalyst => new Stack().deserialize(catalyst));
     this.id = data.id;
     this.category = data.category;
     this.props = {};

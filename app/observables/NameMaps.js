@@ -15,10 +15,11 @@ export default class NameMaps {
   loadAll(profile: Profile): Promise<any> {
     return new Promise((resolve, reject) => {
       store.addTask(`Loading maps`);
+      console.log(profile.recipes.recipes.length);
 
       ipcRenderer.send('start', {
         type: 'maploader',
-        recipes: store.getCurrentProfile().recipes.serialize(),
+        recipes: profile.recipes.serialize(),
         modlist: profile.path + "/config/jeiexporter/exports/modList.json",
         tooltipMap: profile.path + "/config/jeiexporter/exports/tooltipMap.json"
       });

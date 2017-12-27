@@ -26,24 +26,15 @@ export default class MapLoader {
 }
 
 const reduceTooltipMap = (map, recipes) => {
-  let valid = [];
+  let valid = new Set();
   recipes.recipes.forEach(recipe => recipe.outputs.forEach(output => output.names.forEach(name => {
-    if (!valid.includes(name)) {
-      valid.push(name)
-    }
+    valid.add(name)
   })));
 
   return Object.entries(map).reduce((total, current) => {
-    if (valid.includes(current[0])) {
+    if (valid.has(current[0])) {
       total[current[0]] = current[1];
     } 
     return total;
   }, {});
-
-  /*return Object.entries(map).reduce((total, current) => {
-    if (recipes.recipes.some(recipe => recipe.outputs.some(output => output.names.some(name => name == current[0])))) {
-      total[current[0]] = current[1];
-    } 
-    return total;
-  }, {})*/
 }

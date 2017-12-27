@@ -65,6 +65,7 @@ export default class Network {
     });
     this.id = uuidv4();
     this.filter = new Filter();
+    extendObservable(this.filter, {lists: this.filter.lists});
     this.limit = 100;
     this.depth = 3;
     this.algorithm = 0;
@@ -121,6 +122,7 @@ export default class Network {
     this.id = data.id;
     if (data.filter) {
       this.filter = this.filter.deserialize(data.filter);
+      extendObservable(this.filter, {lists: this.filter.lists});
     }
     this.algorithm = data.algorithm;
     this.limit = data.limit;
@@ -153,8 +155,8 @@ export default class Network {
       ipcRenderer.on('algorithm-response', (event, data) => {
         if (data.network === this.id) {
           ipcRenderer.removeAllListeners('algorithm-response')
-          this.nodes = data.nodes.map(node => new Node(new Stack(['']), -1, -1, -1).deserialize(node));
-          this.edges = data.edges.map(edge => new Edge(new Node(new Stack(['']), -1, -1, -1), new Node(new Stack(['']), -1, -1, -1), new Recipe([], [], [], -1), -1, -1).deserialize(edge));
+          this.nodes = data.nodes.map(node => new Node().deserialize(node));
+          this.edges = data.edges.map(edge => new Edge().deserialize(edge));
           store.removeTask(task);
           store.addTask('vis.js: loading network');
           this.visReload();

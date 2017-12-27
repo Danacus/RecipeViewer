@@ -12,7 +12,7 @@ export default class Edge {
   id: number;
   props: Object;
 
-  constructor(parent: Node, child: Node, recipe: Recipe, index: number, id: number) {
+  constructor(parent: Node = new Node(), child: Node = new Node(), recipe: Recipe = new Recipe(), index: number = 0, id: number = 0) {
     this.parent = parent;
     this.child = child;
     this.recipe = recipe;
@@ -32,9 +32,9 @@ export default class Edge {
   }
 
   deserialize(data: Object) {
-    this.child = new Node(new Stack(['']), -1, -1).deserialize(data.child);
-    this.parent = new Node(new Stack(['']), -1, -1).deserialize(data.parent);
-    this.recipe = new Recipe([], [], [], -1).deserialize(data.recipe);
+    this.child = new Node().deserialize(data.child);
+    this.parent = new Node().deserialize(data.parent);
+    this.recipe = new Recipe().deserialize(data.recipe);
     this.recipeIndex = data.recipeIndex;
     this.id = data.id;
     return this;

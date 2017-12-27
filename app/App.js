@@ -16,6 +16,8 @@ import NameMaps from "./observables/NameMaps";
 import { networkViewInstance } from "./views/NetworkView";
 import { Spin } from 'antd';
 import { ipcRenderer } from "electron";
+import jetpack from 'fs-jetpack';
+import { transpile } from "./crafttweaker/zenscript/SimpleTranspiler";
 
 export const store = new Settings();
 
@@ -46,6 +48,10 @@ export default class App extends Component<Props, State> {
 
     store.loadSettings().then(() => {
       this.setState({ready: true});
+    })
+
+    jetpack.readAsync('/home/daan/.local/share/multimc/instances/Enigmatica 2 Expert-0.02/minecraft/scripts/ActuallyAdditions.zs').then(file => {
+      transpile(file);
     })
   }
   

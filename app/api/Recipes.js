@@ -15,7 +15,7 @@ export default class Recipes {
   }
 
   deserialize(data: Object) {
-    this.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
+    this.recipes = data.recipes.map(recipe => new Recipe().deserialize(recipe));
     this.categories = data.categories;
     return this;
   }

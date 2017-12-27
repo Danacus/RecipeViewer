@@ -37,7 +37,7 @@ export default class RecipeStore extends Recipes {
         ipcRenderer.on('recipeloader-response', (event, data) => {  
           store.removeTask(`Loading recipes (${chunks.length - counter + 1}/${chunks.length})`);
           counter--; 
-          data.recipes = data.recipes.map(recipe => new Recipe([], [], [], -1).deserialize(recipe));
+          data.recipes = data.recipes.map(recipe => new Recipe().deserialize(recipe));
           console.log("Added recipe file");
           store.addTask(`Loading recipes (${chunks.length - counter + 1}/${chunks.length})`);    
 

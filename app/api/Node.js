@@ -12,7 +12,7 @@ export default class Node {
   group: number;
   props: Object;
 
-  constructor(stack: Stack, id: number, amount: number = 0, group: number = 0) {
+  constructor(stack: Stack = new Stack(), id: number = 0, amount: number = 0, group: number = 0) {
     this.parents = [];
     this.children = [];
     this.stack = stack;
@@ -34,7 +34,7 @@ export default class Node {
   }
 
   deserialize(data: Object) {
-    this.stack = new Stack(['']).deserialize(data.stack);
+    this.stack = new Stack().deserialize(data.stack);
     this.id = data.id;
     this.image = data.image;
     this.amount = data.amount;

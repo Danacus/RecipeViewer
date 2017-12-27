@@ -4,7 +4,7 @@ export default class Stack {
   names: string[];
   amount: number;
 
-  constructor(names: string[], amount: number = 0) {
+  constructor(names: string[] = [''], amount: number = 0) {
     this.names = names;
     this.amount = amount;
   }
