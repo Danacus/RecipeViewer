@@ -17,7 +17,7 @@ import { networkViewInstance } from "./views/NetworkView";
 import { Spin } from 'antd';
 import { ipcRenderer } from "electron";
 import jetpack from 'fs-jetpack';
-import { transpile } from "./crafttweaker/zenscript/SimpleTranspiler";
+import { transpile, evaluate } from "./crafttweaker/zenscript/SimpleTranspiler";
 
 export const store = new Settings();
 
@@ -50,9 +50,12 @@ export default class App extends Component<Props, State> {
       this.setState({ready: true});
     })
 
-    jetpack.readAsync('/home/daan/.local/share/multimc/instances/Enigmatica 2 Expert-0.02/minecraft/scripts/ActuallyAdditions.zs').then(file => {
-      transpile(file);
-    })
+    jetpack.findAsync('/home/daan/.local/share/multimc/instances/Enigmatica 2 Expert-0.02/minecraft/scripts/', { matching: '*.zs' }).then(files => {
+      let promises = files.map(f => {
+        let file = jetpack.read(f)
+        evaluate(transpile(file));
+      })
+    }) 
   }
   
   render() {
