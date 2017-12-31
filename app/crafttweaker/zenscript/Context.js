@@ -1,16 +1,110 @@
 // @flow
 
 import Stack from '../../api/Stack';
+import { store } from '../../App';
+
+const add = (inputs: CTS[] | CTS, outputs: CTS[] | CTS, catalysts: CTS[] | CTS, name: string) => 
+  store.getCurrentProfile().recipes.addRecipe(
+    flatten([inputs]), 
+    flatten([outputs]),
+    flatten([catalysts]),
+    name
+  );
+
+const remove = (inputs: ?CTS[] | ?CTS, outputs: CTS[] | CTS, catalysts: CTS[] | CTS, wildcard: boolean = false) => 
+  store.getCurrentProfile().recipes.removeRecipe(
+    flatten([inputs]), 
+    flatten([outputs]),
+    flatten([catalysts]),
+    wildcard
+  );
+
+const removeAll = (catalysts: CTS[] | CTS) => 
+  store.getCurrentProfile().recipes.removeAllRecipes(
+    flatten([catalysts])
+  );
+
+const removeByName = (name: string) => 
+  store.getCurrentProfile().recipes.removeRecipesByName(
+    name
+  );
+
+const removeByRegex = (regex: RegExp) => 
+  store.getCurrentProfile().recipes.removeRecipesByRegex(
+    regex
+  );
+
+
+const flatten = list => list.reduce(
+  (a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []
+);
+
+// CraftTweakerStack
+export class CTS extends Stack {
+  constructor(item: string[], amount: number = 1) {
+    super(item, amount);
+  }
+
+  add = () => this // TODO: Oredict support
+  addItems = () => this
+  remove = () => this
+  removeItems = () => this
+  mirror = () => this
+  empty = () => false
+  name =  ''
+  displayName = ''
+  maxStackSize = -1
+  hardness = -1
+  damage = -1
+  maxDamage = -1
+  ores = []
+  owner = ''
+  asBlock = () => this
+
+  definition = {
+    name: '',
+    displayname: '',
+    amount: '',
+    luminosity: '',
+    density: '',
+    temperature: '',
+    viscosity: '',
+    gaseous: '',
+    tag: '',
+    id: '',
+    ores: []
+  }
+
+  getStack = () => new Stack(this.names, this.amount)
+
+  includes = (oredict: string) => true
+  addTooltip = () => this
+  withTag = () => this
+  withEmptyTag = () => this
+  removeTag = () => this
+  updateTag = () => this
+  withDisplayName = () => this
+  withLore = () => this
+  anyDamage = () => this
+  withDamage = () => this
+  anyAmount = () => this
+}
+
+const crafting_table = new CTS(['minecraft:crafting_table:0']);
+const addVanilla = (name, outputs, inputs) => add(inputs, outputs, crafting_table, name);
+
 
 export const context = {
   recipes: {
-    remove: stack => console.log("remove recipe"),
-    removeAll: () => {},
-    removeShaped: () => {},
-    removeShapeless: () => {},
-    addShaped: stack => console.log("add shaped recipe"),
-    addShapeless: stack => console.log("add shapeless recipe"),
-    addShapedMirrored: () => {}
+    remove: output => remove(undefined, output, crafting_table),
+    removeAll: () => removeAll(crafting_table),
+    removeShaped: (output, inputs) => remove(inputs, output, crafting_table),
+    removeShapeless: (output, inputs) => remove(inputs, output, crafting_table),
+    removeByRecipeName: name => removeByName(name),
+    removeByRegex: regex => removeByRegex(new RegExp(regex)),
+    addShaped: addVanilla,
+    addShapeless: addVanilla,
+    addShapedMirrored: addVanilla,
   },
   furnace: {
     remove: stack => console.log("remove recipe"),
@@ -18,53 +112,7 @@ export const context = {
     addRecipe: stack => console.log("add recipe"),
     setFuel: () => {},
   },
-  CTItemStack: class extends Stack {
-    constructor(item: string, amount: number = 1) {
-      super([item], amount);
-    }
-
-    add = () => this // TODO: Oredict support
-    addItems = () => this
-    remove = () => this
-    removeItems = () => this
-    mirror = () => this
-    empty = () => false
-    name =  ''
-    displayName = ''
-    maxStackSize = -1
-    hardness = -1
-    damage = -1
-    maxDamage = -1
-    ores = []
-    owner = ''
-    asBlock = () => this
-
-    definition = {
-      name: '',
-      displayname: '',
-      amount: '',
-      luminosity: '',
-      density: '',
-      temperature: '',
-      viscosity: '',
-      gaseous: '',
-      tag: '',
-      id: '',
-      ores: []
-    }
-
-    includes = (oredict: string) => true
-    addTooltip = () => this
-    withTag = () => this
-    withEmptyTag = () => this
-    removeTag = () => this
-    updateTag = () => this
-    withDisplayName = () => this
-    withLore = () => this
-    anyDamage = () => this
-    withDamage = () => this
-    anyAmount = () => this
-  },
+  CTS,
   oreDict: {
     contains: (oredict: string) => true,
     includes: (oredict: string) => true

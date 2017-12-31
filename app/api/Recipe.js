@@ -8,14 +8,16 @@ export default class Recipe {
   catalysts: Stack[];
   category: string;
   id: number;
+  name: ?string;
   props: Object;
 
-  constructor(inputs: Stack[] = [], outputs: Stack[] = [], catalysts: Stack[] = [], id: number = -1) {
+  constructor(inputs: Stack[] = [], outputs: Stack[] = [], catalysts: Stack[] = [], id: number = -1, name: ?string) {
     this.inputs = inputs;
     this.outputs = outputs;
     this.catalysts = catalysts;
     this.id = id;
     this.props = {};
+    this.name = name;
   }
 
   serialize(): Object {

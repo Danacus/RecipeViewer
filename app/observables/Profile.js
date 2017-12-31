@@ -1,7 +1,11 @@
+// @flow
+
 import Networks from "../observables/Networks";
 import NameMaps from "../observables/NameMaps";
 import { observable } from "mobx";
 import RecipeStore from "./RecipeStore";
+import jetpack from 'fs-jetpack';
+import { evaluate, transpile } from "../crafttweaker/zenscript/SimpleTranspiler";
 
 export default class Profile {
   @observable name: string;
@@ -20,7 +24,7 @@ export default class Profile {
     this.isLoaded = false;
   }
 
-  initialize() {
+  initialize(): Promise<any> {
     if (this.isLoaded) {
       return new Promise(resolve => resolve());
     } else {
@@ -28,15 +32,29 @@ export default class Profile {
     } 
   }
 
-  reload() {
+  reload(): Promise<any> {
     return this.recipes.loadRecipes(this.path).then(() => 
       this.nameMaps.loadAll(this)
     ).then(() => {
-      this.networks.list.forEach(network => {
-        network.recipes = this.recipes;
+      console.log(this.recipes.recipes.length);
+      this.reloadCraftTweaker().then(() => {
+        console.log('Updating recipes');
+        console.log(this.recipes.recipes.length);
+        this.networks.list.forEach(network => {
+          network.recipes = this.recipes;
+        });
       });
       this.isLoaded = true;
       return;
+    });
+  }
+
+  reloadCraftTweaker(): Promise<any> {
+    return jetpack.findAsync(this.path + '/scripts/', { matching: '*.zs' }).then(files => {
+      files.map(f => {
+        let file = jetpack.read(f)
+        evaluate(transpile(file));
+      });
     });
   }
 }

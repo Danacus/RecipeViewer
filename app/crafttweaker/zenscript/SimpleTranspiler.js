@@ -8,10 +8,10 @@ A very, very naive way to transpile zenscript to javascript
 */
 
 const transpiler = new Map([
-  [/oreDict\.((?!get).*);/g, "new CTItemStack(\"ore:$1\")"],
-  [/<([\w|:|\.|\*|\-]*)> *\* *((\d|\w)+)/g, "new CTItemStack(\"$1\", $2)"],
-  [/((\d|\w)+) *\* *<([\w|:|\.|\*|\-]*)>/g, "new CTItemStack(\"$3\", $1)"],
-  [/<([\w|:|\.|\*|\-]*)>/g, "new CTItemStack(\"$1\")"],
+  [/oreDict\.((?!get).*);/g, "new CTS(\"ore:$1\")"],
+  [/<([\w|:|\.|\*|\-]*)> *\* *((\d|\w)+)/g, "new CTS(\"$1\", $2)"],
+  [/((\d|\w)+) *\* *<([\w|:|\.|\*|\-]*)>/g, "new CTS(\"$3\", $1)"],
+  [/<([\w|:|\.|\*|\-]*)>/g, "new CTS(\"$1\")"],
   [/import (crafttweaker).+ as (\w+);/g, ""],
   [/import (crafttweaker).+;/g, ""],
   [/import ([^ ]*) as (\w*);/g, "var $2 = $1;"],

@@ -49,13 +49,6 @@ export default class App extends Component<Props, State> {
     store.loadSettings().then(() => {
       this.setState({ready: true});
     })
-
-    jetpack.findAsync('/home/daan/.local/share/multimc/instances/Enigmatica 2 Expert-0.02/minecraft/scripts/', { matching: '*.zs' }).then(files => {
-      let promises = files.map(f => {
-        let file = jetpack.read(f)
-        evaluate(transpile(file));
-      })
-    }) 
   }
   
   render() {
