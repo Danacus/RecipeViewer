@@ -20,3 +20,4 @@ Then you can use [electron-builder](https://github.com/electron-userland/electro
 
 ## Help me find a cool name for this
 Send your ideas!
+
