@@ -189,7 +189,7 @@ export default class NetworkView extends React.Component<Props, State> {
             */}
             <Collapse.Panel header="Algorithm">
               <Form>
-                <OptionSelect label='Algorithm' placeholder='Select an algorithm' onSelect={this.setAlgorithm.bind(this)} current={this.props.network.algorithm} items={NetworkAlgorithms.map(alg => alg.name())} />
+                <OptionSelect label='Algorithm' placeholder='Select an algorithm' onSelect={this.setAlgorithm.bind(this)} current={this.props.network.algorithm} items={NetworkAlgorithms.map(alg => alg.name)} />
                 <OptionField label='Limit' type='number' onChange={this.props.network.setLimit.bind(this.props.network)} value={this.props.network.limit.toString()} />
                 <OptionField label='Depth' type='number' onChange={this.props.network.setDepth.bind(this.props.network)} value={this.props.network.depth.toString()} />
               </Form>

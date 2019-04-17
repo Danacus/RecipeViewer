@@ -5,7 +5,7 @@ import AutoMerge from './AutoMerge';
 import { INetworkAlgorithm } from './INetworkAlgorithm';
 
 export const NetworkAlgorithms = [
-  DefaultAlgorithm,
-  AutoMerge
+  new DefaultAlgorithm(),
+  new AutoMerge()
   //Shortest
 ];

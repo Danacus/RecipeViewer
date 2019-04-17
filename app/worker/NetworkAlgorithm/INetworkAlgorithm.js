@@ -9,7 +9,6 @@ export interface INetworkAlgorithm {
   limit: number;
   depth: number;
   counter: number;
-  
-  static name(): string;
+  name: string;
   generateNetwork(): Object;
 }

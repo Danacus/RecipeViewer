@@ -236,7 +236,7 @@ export default class Network {
   }
 
   @computed get listAllAlgortihms(): string[] {
-    return NetworkAlgorithms.map(algorithm => algorithm.name());
+    return NetworkAlgorithms.map(algorithm => algorithm.name);
   }
 
   setOnclickCallback(cb: Function) {

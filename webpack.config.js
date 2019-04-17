@@ -11,7 +11,7 @@ const config = {
 		filename: '[name]-bundle.js'
 	},
 	module: {
-		loaders: [
+		rules: [
 			{
 				test: /\.css$/,
 				use: ['style-loader', 'css-loader']
@@ -22,7 +22,7 @@ const config = {
 					path.resolve(__dirname, "app"),
 					path.resolve(__dirname, "node_modules/antd")
 				],
-				use: ['babel-loader']
+				loader: 'babel-loader'
 			},
 			{
 				test: /\.html$/,

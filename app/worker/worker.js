@@ -17,7 +17,7 @@ process.on('message', (data) => {
       });
       break;
     case 'algorithm':
-      let algorithm = new NetworkAlgorithms[data.algorithm]();
+      let algorithm = NetworkAlgorithms[data.algorithm];
       let filteredRecipes = new PrimitiveRecipes();
       filteredRecipes.recipes = new PrimitiveRecipes().deserialize(data.recipes).recipes.slice();
       filteredRecipes.recipes = filteredRecipes.recipes.filter(recipe => new PrimitiveFilter().deserialize(data.filter).recipeFilter(recipe));

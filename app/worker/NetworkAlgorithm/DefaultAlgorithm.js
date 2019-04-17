@@ -14,20 +14,24 @@ export default class DefaultAlgorithm implements INetworkAlgorithm {
   counter: number;
   nodes: PrimitiveNode[];
   edges: PrimitiveEdge[];
+  name: string;
 
   constructor() {
     this.counter = 0;
     this.nodes = [];
     this.edges = [];
+    this.name = "Default";
   }
 
-  static name(): string {
-    return "Default"
-  }
+  // static name(): string {
+  //   return "Default"
+  // }
 
   generateNetwork(): any {
     let targetNode: PrimitiveNode = new PrimitiveNode(this.target, 0, this.target.amount);
     this.counter = 0;
+    this.nodes = [];
+    this.edges = [];
     this.createNode(targetNode, 0);
     return {nodes: this.nodes, edges: this.edges};
   }
